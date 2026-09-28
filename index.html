@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Mecka Performance MIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f2f3ef; --surface:#fdfdfb; --surface-2:#f5f6f2; --ink:#141613; --ink-2:#4a4f48; --muted:#7a7f77;
+  --grid:#e4e6e0; --axis:#c4c7be; --border:rgba(20,22,19,.11); --hover:rgba(20,22,19,.05); --shadow:0 1px 2px rgba(20,22,19,.05);
+  --accent:#1f5b4b; --accent-soft:#e2ede8; --accent-ink:#ffffff;
+  --s-col:#2a78d6; --s-appr:#1baf7a; --s-rej:#eb6834; --s-wait:#4a3aa7; --s-target:#4a4f48; --s-avg:#898781;
+  --heat-lo:#dbe9fb; --heat-hi:#104281; --heat-zero:#eef0ea;
+  --good:#0ca30c; --good-text:#0a6b0a; --warn:#fab219; --warn-text:#8a5a00; --critical:#d03b3b; --critical-text:#b3261e;
+  --good-bg:#e5f3e5; --warn-bg:#fdf1d6; --critical-bg:#f9e2e0;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+body[data-cat="commercial"]{--accent:#34408f;--accent-soft:#e6e8f6}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0e100e; --surface:#171917; --surface-2:#1d201d; --ink:#eff1ec; --ink-2:#c1c5bb; --muted:#8c9188;
+    --grid:#2a2d29; --axis:#3b3f39; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.06); --shadow:none;
+    --accent:#7cc7ae; --accent-soft:#1d2e27; --accent-ink:#0e100e;
+    --s-col:#3987e5; --s-appr:#199e70; --s-rej:#d95926; --s-wait:#9085e9; --s-target:#c1c5bb; --s-avg:#8c9188;
+    --heat-lo:#1b3352; --heat-hi:#9ec5f4; --heat-zero:#1f221f;
+    --good-text:#4cc94c; --warn-text:#f5c04a; --critical-text:#ff8a80;
+    --good-bg:#14301a; --warn-bg:#33290f; --critical-bg:#3a1a18;
+  }
+  :root:not([data-theme="light"]) body[data-cat="commercial"]{--accent:#9aa7f0;--accent-soft:#1f2340}
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0e100e; --surface:#171917; --surface-2:#1d201d; --ink:#eff1ec; --ink-2:#c1c5bb; --muted:#8c9188;
+  --grid:#2a2d29; --axis:#3b3f39; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.06); --shadow:none;
+  --accent:#7cc7ae; --accent-soft:#1d2e27; --accent-ink:#0e100e;
+  --s-col:#3987e5; --s-appr:#199e70; --s-rej:#d95926; --s-wait:#9085e9; --s-target:#c1c5bb; --s-avg:#8c9188;
+  --heat-lo:#1b3352; --heat-hi:#9ec5f4; --heat-zero:#1f221f;
+  --good-text:#4cc94c; --warn-text:#f5c04a; --critical-text:#ff8a80;
+  --good-bg:#14301a; --warn-bg:#33290f; --critical-bg:#3a1a18;
+}
+:root[data-theme="dark"] body[data-cat="commercial"]{--accent:#9aa7f0;--accent-soft:#1f2340}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45}
+[hidden]{display:none!important}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shell{max-width:1320px;margin:0 auto;padding-inline:20px}
+
+/* top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.topbar-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;padding-block:14px 10px}
+.brand{display:grid;gap:2px}
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.brand h1{font-family:var(--display);font-stretch:78%;font-weight:760;font-size:clamp(22px,2.6vw,30px);line-height:1.05;margin:0;letter-spacing:-.01em}
+.brand h1 span{color:var(--ink-2);font-weight:520}
+.top-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.catswitch{display:inline-flex;padding:3px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);gap:2px}
+.catswitch button{border:0;background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13.5px;color:var(--ink-2)}
+.catswitch button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:var(--shadow)}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.pill[data-state="live"] .dot{background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 22%,transparent)}
+.pill[data-state="file"] .dot{background:var(--accent)}
+.pill[data-state="error"] .dot{background:var(--critical)}
+.pill[data-state="wait"] .dot{background:var(--warn)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn[disabled]{opacity:.55;cursor:default}
+.nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:9px 14px 10px;font-size:13.5px;font-weight:500;color:var(--ink-2);text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
+.nav a:hover{color:var(--ink)}
+.nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+
+main.shell{display:grid;gap:18px;padding-block:20px 48px}
+.page{display:grid;gap:16px}
+.page-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px}
+.page-head h2{font-family:var(--display);font-stretch:84%;font-weight:720;font-size:24px;margin:0;letter-spacing:-.005em}
+.page-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.catchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:999px}
+
+.notice{border:1px solid var(--border);border-left:4px solid var(--warn);background:var(--surface);border-radius:10px;padding:12px 16px;display:grid;gap:4px}
+.notice[data-kind="error"]{border-left-color:var(--critical)}
+.notice strong{font-size:14.5px}
+.notice p{margin:0;color:var(--ink-2);max-width:80ch}
+
+/* tiles */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.kpis{grid-template-columns:1fr}.tile.hero{grid-column:auto!important}}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:grid;gap:6px;align-content:start;box-shadow:var(--shadow);min-width:0}
+.tile.hero{grid-column:span 2}
+.tile .label{font-size:12.5px;color:var(--ink-2);font-weight:500;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.tile .value{font-family:var(--display);font-stretch:85%;font-weight:680;font-size:28px;line-height:1.05}
+.tile.hero .value{font-size:clamp(38px,4.6vw,52px)}
+.tile .value small{font-family:var(--body);font-size:14px;font-weight:500;color:var(--muted);margin-left:4px}
+.tile .sub{font-size:12.5px;color:var(--muted)}
+.meter{position:relative;height:10px;border-radius:5px;background:color-mix(in srgb,var(--s-col) 15%,var(--surface));margin-top:6px}
+.meter .fill{position:absolute;inset:0 auto 0 0;border-radius:5px;background:var(--s-col)}
+.meter .fill.appr{background:var(--s-appr);height:4px;top:3px}
+.meter .tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:1px}
+.keys{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2)}
+.key{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.key i.line{height:2px;width:14px;border-radius:1px}
+.key i.tick{width:2px;height:12px;border-radius:1px}
+.key i.dash{height:0;width:14px;border-top:2px dashed var(--s-avg);border-radius:0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px 2px 7px;border-radius:999px;white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%}
+.chip.good{background:var(--good-bg);color:var(--good-text)}.chip.good::before{background:var(--good)}
+.chip.warn{background:var(--warn-bg);color:var(--warn-text)}.chip.warn::before{background:var(--warn)}
+.chip.critical{background:var(--critical-bg);color:var(--critical-text)}.chip.critical::before{background:var(--critical)}
+.chip.neutral{background:var(--surface-2);color:var(--ink-2)}.chip.neutral::before{background:var(--muted)}
+
+/* panels */
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:14px;align-items:start}
+.grid-3-2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:980px){.grid-3-2{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 16px 12px;display:grid;gap:10px;min-width:0;align-content:start;box-shadow:var(--shadow)}
+.panel-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:8px 16px}
+.panel h3{font-family:var(--display);font-stretch:88%;font-weight:680;font-size:17px;margin:0;text-wrap:balance}
+.panel-head p{margin:2px 0 0;color:var(--muted);font-size:12.5px;max-width:64ch}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface-2)}
+.seg button{border:0;background:transparent;padding:5px 11px;font-size:12.5px;cursor:pointer;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:inset 0 0 0 1px var(--border)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select{padding:6px 9px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:13px}
+.chart{position:relative;width:100%;min-height:60px}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--body);font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);font-size:13px;padding:24px 0;text-align:center}
+body.loading main .chart,body.loading main .tbl-wrap,body.loading main .kpis{opacity:.5;transition:opacity .2s}
+
+/* takeaways */
+.takes{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.takes li{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.takes li .chip{grid-row:span 2}
+.takes li b{font-weight:600;font-size:13.5px}
+.takes li span{color:var(--ink-2);font-size:13px}
+
+/* bar lists */
+.bars{display:grid;gap:9px}
+.bar-row{display:grid;grid-template-columns:minmax(110px,180px) 1fr minmax(92px,auto);gap:10px;align-items:center;font-size:13px}
+.bar-row .name{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-row .track{height:14px;position:relative}
+.bar-row .track span{position:absolute;inset:0 auto 0 0;border-radius:0 4px 4px 0;min-width:2px}
+.bar-row .val{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.bar-row .val em{font-style:normal;color:var(--muted);margin-left:6px}
+.stack100{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px;background:var(--surface)}
+.stack100 span{display:block;height:100%}
+.minis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px}
+.mini h4{font-size:12.5px;font-weight:600;margin:0 0 2px;color:var(--ink-2)}
+.mini .mv{font-size:12px;color:var(--muted)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--grid)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1}
+thead th{font-size:11.5px;font-weight:600;color:var(--ink-2);background:var(--surface-2);letter-spacing:.02em}
+thead th:first-child{background:var(--surface-2);z-index:2}
+thead th button{all:unset;cursor:pointer}
+thead th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+tbody tr:hover td{background:var(--hover)}
+tbody tr:hover td:first-child{background:color-mix(in srgb,var(--ink) 4%,var(--surface))}
+tbody tr:last-child td{border-bottom:0}
+td.muted{color:var(--muted)}
+td.left{text-align:left}
+tr.total td,tr.total td:first-child{font-weight:600;background:var(--surface-2)}
+tr.dim td{color:var(--muted)}
+.cellbar{display:inline-grid;grid-template-columns:56px auto;gap:8px;align-items:center}
+.cellbar i{display:block;height:6px;border-radius:0 3px 3px 0;background:var(--s-col);justify-self:end}
+.sev{display:inline-flex;align-items:center;gap:6px}
+.sev::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--good)}
+.sev[data-s="watch"]::before{background:var(--warn)}
+.sev[data-s="high"]::before{background:var(--critical)}
+.sev[data-s="none"]::before{background:var(--axis)}
+.legend-row{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);align-items:center}
+.vlink{all:unset;cursor:pointer;color:var(--ink);font-weight:500;border-bottom:1px dotted var(--axis)}
+.vlink:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.vlink:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* heatmap */
+.heat-wrap{overflow-x:auto}
+.heat{display:grid;gap:2px;min-width:720px;font-size:11.5px}
+.heat .hl{color:var(--ink-2);white-space:nowrap;overflow:hidden;padding-right:8px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.heat .hl span{overflow:hidden;text-overflow:ellipsis}
+.heat .hl b{font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.heat .hc{height:20px;border-radius:3px;background:var(--heat-zero)}
+.heat .hc:hover{outline:2px solid var(--ink);outline-offset:-1px}
+.heat .hd{color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.heat-scale{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.heat-scale .ramp{width:140px;height:8px;border-radius:4px}
+
+/* notes */
+.checks{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.checks li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:13px}
+.checks li p{margin:0;color:var(--ink-2)}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px 24px;margin:0}
+.defs div{display:grid;gap:1px;align-content:start}
+.defs dt{color:var(--ink);font-weight:600;font-size:13px}
+.defs dd{margin:0;color:var(--ink-2);font-size:13px}
+
+/* loader (outside Claude) */
+.drop{background:var(--surface);border:1.5px dashed var(--axis);border-radius:14px;padding:40px 24px;display:grid;gap:10px;justify-items:center;text-align:center}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop h2{font-family:var(--display);font-stretch:88%;font-size:22px;margin:0}
+.drop p{margin:0;color:var(--ink-2);max-width:66ch}
+.drop .hint{color:var(--muted);font-size:12.5px}
+.linkish{color:var(--accent);text-decoration:underline;cursor:pointer}
+
+/* tooltip */
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--border);border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:9px 11px;font-size:12.5px;min-width:160px;max-width:280px;display:grid;gap:3px}
+.tip .t{font-weight:600;color:var(--ink-2);font-size:12px;margin-bottom:2px}
+.tip .r{display:grid;grid-template-columns:14px auto 1fr;gap:6px;align-items:center}
+.tip .r i{height:2px;width:12px;border-radius:1px}
+.tip .r b{font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
+.tip .r span{color:var(--muted)}
+footer.shell{color:var(--muted);font-size:12px;padding-block:0 32px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<script>
+/* ============ SETTINGS: edit these, then commit the file ============
+   googleClientId  Paste the OAuth Client ID from Google Cloud here (it ends in .apps.googleusercontent.com).
+                   With it set, viewers click "Sign in with Google" and the page reads live data.
+                   It is not a password; it's safe to keep in a public repo.
+   source          "feed"    reads the two feed sheets, which hold only the dashboard tabs (recommended:
+                             viewers only need access to the feed sheets). Google updates them about every 30 min.
+                   "tracker" reads the tabs straight from the two trackers (no delay, but viewers
+                             need access to the full trackers).
+   refreshMinutes  How often the page re-reads the data while it's open.
+   ==================================================================== */
+window.MECKA_CONFIG={
+  googleClientId:"",
+  source:"feed",
+  refreshMinutes:5,
+  allowFiles:false
+};
+</script>
+<header class="topbar">
+  <div class="shell">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="eyebrow">BetterPlace × Mecka · month to date</div>
+        <h1>Mecka performance <span id="monthLabel"></span></h1>
+      </div>
+      <div class="top-actions">
+        <div class="catswitch" role="group" aria-label="Category" id="catSwitch">
+          <button type="button" data-cat="domestic" aria-pressed="true">Domestic</button>
+          <button type="button" data-cat="commercial" aria-pressed="false">Commercial</button>
+        </div>
+        <span class="pill" id="status" data-state="wait" role="status"><span class="dot"></span><span id="statusText">Loading…</span></span>
+        <button class="btn" id="refreshBtn" type="button">Refresh</button>
+        <button class="btn primary" id="signInBtn" type="button" hidden>Sign in with Google</button>
+        <button class="btn" id="signOutBtn" type="button" hidden>Sign out</button>
+        <label class="btn" for="fileIn" id="fileBtn" hidden>Load file</label>
+        <input type="file" id="fileIn" accept=".csv,.xlsx,.xls,.xlsm,text/csv" multiple hidden>
+        <a class="btn" id="trackerLink" href="#" target="_blank" rel="noopener">Open tracker</a>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Pages" id="nav">
+      <a href="#overview" data-page="overview">Overview</a>
+      <a href="#performance" data-page="performance">Project performance</a>
+      <a href="#quality" data-page="quality">Quality</a>
+      <a href="#vendors" data-page="vendors">Vendors</a>
+      <a href="#vendor" data-page="vendor">Vendor detail</a>
+      <a href="#notes" data-page="notes">Notes and data checks</a>
+    </nav>
+  </div>
+</header>
+
+<main class="shell" id="main">
+  <div class="notice" id="notice" hidden><strong id="noticeTitle"></strong><p id="noticeBody"></p></div>
+
+  <section id="loader" hidden aria-label="Load data">
+    <div class="drop" id="setupPanel" hidden>
+      <h2>Live data needs one more setting</h2>
+      <p>This page reads the trackers straight from Google Sheets once a Google Client ID is added. Open <b>index.html</b> in your GitHub repo, click the pencil (Edit) icon, and paste the Client ID between the quotes of <b>googleClientId:""</b> in the SETTINGS block near the top. Then click Commit changes and reload this page.</p>
+      <p class="hint">The Client ID comes from Google Cloud (APIs &amp; Services → Credentials → OAuth client ID, type Web application). It ends in .apps.googleusercontent.com.</p>
+    </div>
+    <div class="drop" id="signinPanel" hidden>
+      <h2>Sign in to see live data</h2>
+      <p>This dashboard reads the Domestic and Commercial trackers straight from Google Sheets. Sign in with your BetterPlace Google account. You'll only see data your account can already open.</p>
+      <button class="btn primary" type="button" id="signInBtn2">Sign in with Google</button>
+      <p class="hint">Nothing is stored on this site. Google keeps you signed in for about an hour at a time; after that the page asks again.</p>
+    </div>
+    <div class="drop" id="drop">
+      <h2>Load this month's trackers</h2>
+      <p>Drop the Domestic and Commercial tracker downloads (.xlsx) anywhere on this page, or <label for="fileIn" class="linkish">choose files</label>. You can load one or both. The files are read in your browser and aren't uploaded anywhere.</p>
+      <p class="hint">In Google Sheets: File → Download → Microsoft Excel (.xlsx). Domestic uses MTD Revenue MIS, MTD Vendor MIS, DOD MIS (Recorded) and DOD MIS (Uploaded). Commercial uses MTD Revenue MIS, MTD Vendor MIS and DOD MIS. No other tabs are read.</p>
+    </div>
+  </section>
+
+  <!-- OVERVIEW -->
+  <section class="page" id="p-overview" data-page="overview" aria-labelledby="h-overview">
+    <div class="page-head"><div><h2 id="h-overview">Overview</h2><p id="ov-date"></p></div><span class="catchip" data-catname></span></div>
+    <div class="kpis">
+      <div class="tile hero">
+        <div class="label"><span id="k-col-label">Hours vs month target</span><span id="k-col-chip"></span></div>
+        <div class="value" id="k-col">–</div>
+        <div class="meter" id="k-meter" aria-hidden="true"><div class="fill" style="width:0"></div><div class="fill appr" style="width:0"></div><div class="tick" style="left:0"></div></div>
+        <div class="keys"><span class="key"><i style="background:var(--s-col)"></i><span id="k-col-key">Collected</span></span><span class="key"><i style="background:var(--s-appr)"></i>Approved</span><span class="key"><i class="tick" style="background:var(--ink)"></i>Target due to date</span></div>
+        <div class="sub" id="k-col-sub"></div>
+      </div>
+      <div class="tile"><div class="label">Approved hours</div><div class="value" id="k-appr">–</div><div class="sub" id="k-appr-sub"></div></div>
+      <div class="tile"><div class="label">Revenue, month to date</div><div class="value" id="k-rev">–</div><div class="sub" id="k-rev-sub"></div></div>
+      <div class="tile"><div class="label">Month-end revenue projection</div><div class="value" id="k-proj">–</div><div class="sub" id="k-proj-sub"></div></div>
+      <div class="tile"><div class="label">Gross margin</div><div class="value" id="k-gm">–</div><div class="sub" id="k-gm-sub"></div></div>
+      <div class="tile"><div class="label"><span>Approval rate</span><span id="k-apr-chip"></span></div><div class="value" id="k-apr">–</div><div class="sub" id="k-apr-sub"></div></div>
+      <div class="tile"><div class="label"><span>Not reviewed yet</span><span id="k-nr-chip"></span></div><div class="value" id="k-nr">–</div><div class="sub" id="k-nr-sub"></div></div>
+    </div>
+    <div class="grid-3-2">
+      <div class="panel"><div class="panel-head"><div><h3>Key takeaways</h3><p>Worked out from the latest data each time the page refreshes.</p></div></div><ul class="takes" id="ov-takes"></ul></div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>Pace to target</h3><p>Cumulative hours against the cumulative daily target.</p></div>
+          <div class="keys"><span class="key"><i class="line" style="background:var(--s-col)"></i><span data-collabel>Collected</span></span><span class="key"><i class="line" style="background:var(--s-appr)"></i>Approved</span><span class="key"><i class="line" style="background:var(--s-target)"></i>Target</span></div></div>
+        <div class="chart" id="ov-pace"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div><h3>Where uploaded hours stand</h3><p id="ov-stack-desc">Share of uploaded hours by QA result.</p></div></div>
+        <div class="stack100" id="ov-stack" role="img" aria-label="Uploaded hours by QA result"></div>
+        <div class="bars" id="ov-stack-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>Top vendors by approved hours</h3><p id="ov-topv-desc">From the MTD Vendor MIS tab.</p></div></div>
+        <div class="bars" id="ov-topv"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PERFORMANCE -->
+  <section class="page" id="p-performance" data-page="performance" hidden aria-labelledby="h-performance">
+    <div class="page-head"><div><h2 id="h-performance">Project performance</h2><p>Daily and weekly delivery against target.</p></div><span class="catchip" data-catname></span></div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Daily hours against target</h3><p id="pf-daily-desc">Bars show hours per day; the line is that day's target.</p></div>
+        <div class="seg" role="group" aria-label="Daily measure" id="pfSeg"></div></div>
+      <div class="chart" id="pf-daily"></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div><h3>QA outcome by upload day</h3><p>Each day's uploaded hours split by QA result. Approvals are counted on the day QA ran.</p></div>
+          <div class="keys"><span class="key"><i style="background:var(--s-appr)"></i>Approved</span><span class="key"><i style="background:var(--s-rej)"></i>Rejected</span><span class="key"><i style="background:var(--s-wait)"></i>Not reviewed yet</span></div></div>
+        <div class="chart" id="pf-qa"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3 id="pf-active-title">Active contributors per day</h3><p>From the day-wise rows of the MTD Revenue MIS tab.</p></div></div>
+        <div class="chart" id="pf-active"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Week by week</h3><p>Weeks run 1–7, 8–14, 15–21, 22–28 and 29 to month end. Change compares the daily average with the week before.</p></div></div>
+      <div class="tbl-wrap"><table id="pf-weekly"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Day-wise detail</h3><p>Latest day first. Rates use reviewed hours (approved + rejected).</p></div></div>
+      <div class="tbl-wrap"><table id="pf-days"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- QUALITY -->
+  <section class="page" id="p-quality" data-page="quality" hidden aria-labelledby="h-quality">
+    <div class="page-head"><div><h2 id="h-quality">Quality</h2><p>Rejections, their reasons, and which vendors drive them.</p></div><span class="catchip" data-catname></span></div>
+    <div class="kpis">
+      <div class="tile"><div class="label"><span>Rejection rate, month to date</span><span id="q-rr-chip"></span></div><div class="value" id="q-rr">–</div><div class="sub" id="q-rr-sub"></div></div>
+      <div class="tile"><div class="label">Last 7 days</div><div class="value" id="q-rr7">–</div><div class="sub" id="q-rr7-sub"></div></div>
+      <div class="tile"><div class="label">Top rejection reason</div><div class="value" id="q-top" style="font-size:20px">–</div><div class="sub" id="q-top-sub"></div></div>
+      <div class="tile"><div class="label">Rejected hours, month to date</div><div class="value" id="q-rej">–</div><div class="sub" id="q-rej-sub"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Rejection rate by day</h3><p>Rejected share of reviewed hours, with the 7-day average.</p></div>
+        <div class="keys"><span class="key"><i class="line" style="background:var(--s-rej)"></i>Daily</span><span class="key"><i class="dash"></i>7-day average</span></div></div>
+      <div class="chart" id="q-trend"></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel"><div class="panel-head"><div><h3>Rejection reasons</h3><p id="q-reasons-desc"></p></div></div><div class="bars" id="q-reasons"></div></div>
+      <div class="panel"><div class="panel-head"><div><h3>Rejection rate by vendor</h3><p>Vendors with hours this month, highest first. The figure on the right is the vendor's total hours.</p></div></div>
+        <div class="legend-row"><span class="sev" data-s="ok">Under 25%</span><span class="sev" data-s="watch">25–35%</span><span class="sev" data-s="high">35% and above</span></div>
+        <div class="bars" id="q-vrank"></div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><div><h3>Reason trends</h3><p>Rejected hours per day for each reason. The charts share one scale so they can be compared.</p></div></div><div class="minis" id="q-minis"></div></div>
+  </section>
+
+  <!-- VENDORS -->
+  <section class="page" id="p-vendors" data-page="vendors" hidden aria-labelledby="h-vendors">
+    <div class="page-head"><div><h2 id="h-vendors">Vendors</h2><p>Scorecard from the MTD Vendor MIS tab. Click a vendor name for its detail page.</p></div><span class="catchip" data-catname></span></div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Vendor scorecard</h3><p>Click a column heading to sort.</p></div>
+        <div class="legend-row"><span>Rejection rate:</span><span class="sev" data-s="ok">under 25%</span><span class="sev" data-s="watch">25–35%</span><span class="sev" data-s="high">35% and above</span></div></div>
+      <div class="tbl-wrap"><table id="v-table"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Volume and quality</h3><p>Each dot is a vendor: further right means more hours, higher means more rejections. The dashed lines mark the category's overall rate and the average vendor volume.</p></div></div>
+      <div class="chart" id="v-scatter"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Vendor × day</h3><p id="heat-desc"></p></div>
+        <div class="controls"><div class="seg" role="group" aria-label="Date basis" id="basisSeg"><button type="button" data-v="rec" aria-pressed="true">By recorded date</button><button type="button" data-v="upl" aria-pressed="false">By uploaded date</button></div>
+          <select id="dispSel" aria-label="Measure"></select></div></div>
+      <div class="heat-scale" id="heatScale"></div>
+      <div class="heat-wrap"><div class="heat" id="heat"></div></div>
+    </div>
+  </section>
+
+  <!-- VENDOR DETAIL -->
+  <section class="page" id="p-vendor" data-page="vendor" hidden aria-labelledby="h-vendor">
+    <div class="page-head"><div><h2 id="h-vendor">Vendor detail</h2><p id="vd-sub">Pick a vendor to see its month so far.</p></div>
+      <div class="controls"><select id="vdSel" aria-label="Vendor"></select><span class="catchip" data-catname></span></div></div>
+    <div class="kpis">
+      <div class="tile"><div class="label">Total hours</div><div class="value" id="vd-tot">–</div><div class="sub" id="vd-tot-sub"></div></div>
+      <div class="tile"><div class="label">Approved hours</div><div class="value" id="vd-appr">–</div><div class="sub" id="vd-appr-sub"></div></div>
+      <div class="tile"><div class="label"><span>Rejection rate</span><span id="vd-rr-chip"></span></div><div class="value" id="vd-rr">–</div><div class="sub" id="vd-rr-sub"></div></div>
+      <div class="tile"><div class="label">Revenue</div><div class="value" id="vd-rev">–</div><div class="sub" id="vd-rev-sub"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3>Daily hours</h3><p id="vd-daily-desc">From the DOD MIS tab.</p></div>
+        <div class="controls"><div class="seg" role="group" aria-label="Date basis" id="vdBasis"><button type="button" data-v="rec" aria-pressed="true">By recorded date</button><button type="button" data-v="upl" aria-pressed="false">By uploaded date</button></div>
+        <div class="keys"><span class="key"><i style="background:var(--s-appr)"></i>Approved</span><span class="key"><i style="background:var(--s-rej)"></i>Rejected</span><span class="key"><i style="background:var(--s-wait)"></i>Rest of total hours</span></div></div></div>
+      <div class="chart" id="vd-daily"></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel"><div class="panel-head"><div><h3>Rejection rate against the category</h3><p>Daily rejected share of reviewed hours.</p></div>
+        <div class="keys"><span class="key"><i class="line" style="background:var(--s-rej)"></i><span id="vd-name-key">Vendor</span></span><span class="key"><i class="dash"></i>Whole category</span></div></div>
+        <div class="chart" id="vd-rate"></div></div>
+      <div class="panel"><div class="panel-head"><div><h3>Rejection reasons</h3><p>Month to date, from the MTD Vendor MIS tab.</p></div></div><div class="bars" id="vd-reasons"></div>
+        <dl class="defs" id="vd-facts" style="margin-top:6px"></dl></div>
+    </div>
+  </section>
+
+  <!-- NOTES -->
+  <section class="page" id="p-notes" data-page="notes" hidden aria-labelledby="h-notes">
+    <div class="page-head"><div><h2 id="h-notes">Notes and data checks</h2><p>How each figure is worked out, and where the tracker's own numbers disagree.</p></div><span class="catchip" data-catname></span></div>
+    <div class="panel"><div class="panel-head"><div><h3>Data checks</h3><p>Run on the latest data for the selected category.</p></div></div><ul class="checks" id="n-checks"></ul></div>
+    <div class="panel"><div class="panel-head"><div><h3>Definitions</h3></div></div>
+      <dl class="defs">
+        <div><dt>Hours collected</dt><dd>Domestic counts recorded hours against target; Commercial counts uploaded hours, matching each tracker's "Achieved" figure.</dd></div>
+        <div><dt>Target due to date</dt><dd>The sum of daily targets up to the latest day with data. Pace compares hours collected with it.</dd></div>
+        <div><dt>Pace status</dt><dd>On track at 100% of the target due or more, at risk from 90%, behind under 90%.</dd></div>
+        <div><dt>Approval and rejection rate</dt><dd>Approved or rejected hours divided by reviewed hours (approved + rejected), the same way for both categories. Hours still waiting for QA are left out.</dd></div>
+        <div><dt>Not reviewed yet</dt><dd>Uploaded hours minus approved and rejected hours. It covers pending, deferred and unprocessed hours.</dd></div>
+        <div><dt>Revenue and projection</dt><dd>Taken as-is from the MTD Revenue MIS summary. Revenue per approved hour is revenue divided by approved hours.</dd></div>
+        <div><dt>Gross margin</dt><dd>Vendor revenue minus vendor payout, divided by vendor revenue, from the MTD Vendor MIS tab. Shown only when payouts are filled in.</dd></div>
+        <div><dt>Rejection rate bands</dt><dd>Under 25% is fine, 25–35% needs watching, 35% and above is high. These bands are a suggested starting point.</dd></div>
+      </dl>
+    </div>
+    <div class="panel"><div class="panel-head"><div><h3>Data sources</h3></div></div><dl class="defs" id="n-sources"></dl></div>
+  </section>
+</main>
+<footer class="shell" id="foot"></footer>
+<div class="tip" id="tip" hidden></div>
+<script>
+(function(){
+"use strict";
+/* ===== categories and settings ===== */
+const CFG=Object.assign({dataUrl:{},refreshMinutes:5,trackerUrl:{},feedId:{},googleClientId:null,source:"feed",allowFiles:true},window.MECKA_CONFIG||{});
+const CATS={
+  domestic:{key:"domestic",label:"Domestic",feed:"1vbhKXGD4_OqCBLyaopiwwG1BR3GhTgBMwtFry4N62HA",
+    tracker:"https://docs.google.com/spreadsheets/d/1k0MSVY9XMu2TeOW4jav5Cnu5MG76mOwyRGoz5cDUhWM/edit",
+    tabs:["MTD Revenue MIS","MTD Vendor MIS","DOD MIS (Recorded)","DOD MIS (Uploaded)"],split:true,colKey:"recorded",colLabel:"Recorded",activeLabel:"Active users"},
+  commercial:{key:"commercial",label:"Commercial",feed:"1FwuIX9Q9UrFvQdMnx8lOdTlY6pLmfdZ9D3FSauS2Yjo",
+    tracker:"https://docs.google.com/spreadsheets/d/125X_uba-JeQ_kK3JbinM2fuzWrn2psh9vmJIMDAF4lI/edit",
+    tabs:["MTD Revenue MIS","MTD Vendor MIS","DOD MIS"],split:false,colKey:"uploaded",colLabel:"Uploaded",activeLabel:"Active businesses"}
+};
+Object.keys(CATS).forEach(k=>{if(CFG.trackerUrl&&CFG.trackerUrl[k])CATS[k].tracker=CFG.trackerUrl[k];if(CFG.feedId&&CFG.feedId[k])CATS[k].feed=CFG.feedId[k];});
+const $=id=>document.getElementById(id);
+const MON=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/* ===== formatting ===== */
+const fmtN=(v,d=0)=>Number.isFinite(v)?v.toLocaleString("en-IN",{maximumFractionDigits:d,minimumFractionDigits:d}):"–";
+const fmtH=v=>Number.isFinite(v)?fmtN(Math.round(v)):"–";
+const fmtH1=v=>Number.isFinite(v)?fmtN(v,Math.abs(v)<100?1:0):"–";
+const fmtP=(v,d=1)=>Number.isFinite(v)?(v*100).toFixed(d)+"%":"–";
+const fmtPts=v=>Number.isFinite(v)?(v>0?"+":v<0?"−":"")+Math.abs(v*100).toFixed(1)+" pts":"–";
+const fmtINR=v=>{if(!Number.isFinite(v))return"–";const a=Math.abs(v);if(a>=1e7)return"₹"+(v/1e7).toFixed(2)+" Cr";if(a>=1e5)return"₹"+(v/1e5).toFixed(2)+" L";return"₹"+fmtN(Math.round(v));};
+const fmtINRfull=v=>Number.isFinite(v)?"₹"+fmtN(Math.round(v)):"–";
+const fmtK=v=>v>=1000?(v%1000===0?v/1000:(v/1000).toFixed(1))+"K":String(+(+v).toFixed(2));
+const dayLabel=d=>d.getDate()+" "+MONTHS[d.getMonth()].slice(0,3);
+const norm=s=>String(s==null?"":s).trim().toLowerCase().replace(/\s+/g," ");
+const vkey=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const div=(a,b)=>b>0?a/b:NaN;
+const sum=(a,f)=>a.reduce((s,x)=>s+(f?f(x):x),0);
+
+/* ===== parsing ===== */
+function parseCSV(text){const rows=[];let row=[],f="",q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}
+    else if(c==='"')q=true;else if(c===','){row.push(f);f="";}else if(c==='\n'){row.push(f);rows.push(row);row=[];f="";}else if(c!=='\r')f+=c;}
+  if(f!==""||row.length){row.push(f);rows.push(row);}return rows;}
+function num(v){if(v==null)return NaN;let s=String(v).trim();if(!s||s==="-"||s==="—")return NaN;const pct=s.endsWith("%");s=s.replace(/[₹,%\s]/g,"");if(/^\(.*\)$/.test(s))s="-"+s.slice(1,-1);const n=Number(s);if(!Number.isFinite(n))return NaN;return pct?n/100:n;}
+const n0=v=>{const x=num(v);return Number.isFinite(x)?x:0;};
+function pctVal(v){const s=String(v==null?"":v).trim();const x=num(s);if(!Number.isFinite(x))return NaN;if(s.endsWith("%"))return x;return Math.abs(x)<=1.5?x:x/100;}
+const DMY=/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2}|\d{4})$/;
+function parseDateList(list){let dmy=true;for(const s of list){const m=String(s).trim().match(DMY);if(m){if(+m[1]>12){dmy=true;break;}if(+m[2]>12){dmy=false;break;}}}return list.map(s=>parseDate(s,dmy));}
+function parseDate(v,dmy=true){const s=String(v==null?"":v).trim();let m;
+  if((m=s.match(DMY))){const a=+m[1],b=+m[2],y=+m[3]<100?2000+(+m[3]):+m[3];return dmy?new Date(y,b-1,a):new Date(y,a-1,b);}
+  if((m=s.match(/^(\d{1,2})[-\s]*([A-Za-z]{3})[A-Za-z]*[-\s,]*(\d{4})$/))){const mi=MON.indexOf(m[2].toLowerCase());if(mi>=0)return new Date(+m[3],mi,+m[1]);}
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))return new Date(+m[1],+m[2]-1,+m[3]);
+  if(/^\d{5}(\.\d+)?$/.test(s)){const n=Math.floor(+s);if(n>30000&&n<80000){const d=new Date(1899,11,30);d.setDate(d.getDate()+n);return d;}}
+  return null;}
+function extractBlocks(rows){const markers=[];
+  for(let r=0;r<Math.min(rows.length,12)&&!markers.length;r++)(rows[r]||[]).forEach((v,c)=>{if(/^##/.test(v))markers.push({name:v.replace(/^##/,"").trim(),r,c});});
+  markers.sort((a,b)=>a.c-b.c);const blocks={};
+  markers.forEach((m,i)=>{const endC=i+1<markers.length?markers[i+1].c:undefined;const first=rows[m.r+1]||[];let sc=m.c;
+    for(let d=0;d<=3;d++){if(first[m.c+d]){sc=m.c+d;break;}if(m.c-d>=1&&first[m.c-d]&&(i===0||m.c-d>markers[i-1].c)){sc=m.c-d;break;}}
+    const out=[];for(let r=m.r+1;r<rows.length;r++)out.push((rows[r]||[]).slice(sc,endC));
+    while(out.length&&out[out.length-1].every(v=>!String(v).trim()))out.pop();
+    out.forEach(r=>{while(r.length&&!String(r[r.length-1]).trim())r.pop();});blocks[m.name]=out;});
+  return blocks;}
+function blockState(b){if(!b||!b.length)return"missing";const v=String((b[0]||[])[0]||"").trim();if(/^loading/i.test(v))return"loading";if(/^#(REF|N\/A|ERROR|VALUE|NAME)/i.test(v))return"error:"+v;return"ok";}
+function parseRevenue(b){
+  const res={summary:{},days:[],reasons:[],sheetTotals:{}};
+  const hi=b.findIndex(r=>norm(r[0])==="target"&&/ach/i.test(r[1]||""));
+  if(hi>=0){const H=b[hi],V=b[hi+1]||[];H.forEach((h,i)=>{if(String(h).trim())res.summary[norm(h)]=V[i];});}
+  const di=b.findIndex(r=>norm(r[0])==="date");if(di<0)return res;
+  const HR=b[di],H=HR.map(norm),idx=n=>H.indexOf(n),find=p=>H.findIndex(h=>h.startsWith(p));
+  if(di>0&&!String(b[di-1][0]||"").trim()){const T=b[di-1];H.forEach((h,i)=>{if(h&&h!=="%")res.sheetTotals[h]=T[i];});}
+  const rp=idx("rejected %");
+  for(let i=rp+1;rp>=0&&i<H.length;i++){if(!H[i]||H[i]==="%"||H[i]==="screenshots")continue;if(H[i+1]==="%")res.reasons.push({name:String(HR[i]).trim(),col:i});}
+  const rows=b.slice(di+1).filter(r=>String(r[0]||"").trim());const dates=parseDateList(rows.map(r=>r[0]));
+  const us=find("users")>=0?find("users"):find("active");
+  const c={t:idx("target"),u:idx("uploaded"),r:idx("recorded"),a:idx("approved"),j:idx("rejected"),p:idx("pending"),d:idx("deferred"),us,dv:find("device"),pr:find("avg prod"),sh:idx("screenshots")};
+  const g=(r,i)=>i>=0?n0(r[i]):0;
+  rows.forEach((r,k)=>{const d=dates[k];if(!d)return;
+    res.days.push({date:d,day:d.getDate(),target:g(r,c.t),uploaded:g(r,c.u),recorded:g(r,c.r),approved:g(r,c.a),rejected:g(r,c.j),pending:g(r,c.p),deferred:g(r,c.d),active:g(r,c.us),devices:g(r,c.dv),prod:c.pr>=0?num(r[c.pr]):NaN,reasons:res.reasons.map(x=>n0(r[x.col])),shot:c.sh>=0?String(r[c.sh]||"").trim():""});});
+  res.days.sort((a,b)=>a.date-b.date);res.hasRecorded=c.r>=0;return res;}
+function parseVendors(b){
+  const out={rows:[],reasons:[]};if(!b.length)return out;
+  const HR=b[0],H=HR.map(norm),idx=n=>H.indexOf(n),find=p=>H.findIndex(h=>h.startsWith(p));const pi=find("avg prod");
+  for(let i=pi+1;pi>=0&&i<H.length;i++){if(H[i]&&H[i]!=="%"&&H[i+1]==="%")out.reasons.push({name:String(HR[i]).trim(),col:i});}
+  const c={rev:idx("revenue"),pay:idx("payout"),gm:idx("gm"),tot:idx("total hours"),a:idx("approved hours"),j:idx("rejected hours"),p:find("pending"),d:find("deferred"),dv:idx("total device"),pr:pi};
+  b.slice(1).forEach(r=>{const name=String(r[0]||"").trim();if(!name)return;
+    out.rows.push({name,isTotal:/^(grand )?total$/i.test(name),revenue:n0(r[c.rev]),payout:num(r[c.pay]),gmRaw:String(r[c.gm]||"").trim(),total:n0(r[c.tot]),approved:n0(r[c.a]),rejected:n0(r[c.j]),pending:n0(r[c.p]),deferred:n0(r[c.d]),devices:num(r[c.dv]),prod:num(r[c.pr]),prodText:String(r[c.pr]||"").trim(),reasons:out.reasons.map(x=>n0(r[x.col]))});});
+  return out;}
+function parseDOD(b){
+  const out={vendors:[],disps:[],hourDisps:[],days:[]};if(!b.length)return out;
+  const H=b[0],hn=H.map(norm);const dispC=hn.indexOf("disposition"),totC=hn.indexOf("total"),pocC=hn.findIndex(h=>h.startsWith("poc")),devC=hn.findIndex(h=>h.startsWith("device"));
+  const start=(dispC>=0?dispC:4)+1;const parsed=parseDateList(H.slice(start));const dateCols=[];
+  parsed.forEach((d,k)=>{if(String(H[start+k]||"").trim())dateCols.push({col:start+k,date:d,day:d?d.getDate():k+1});});out.days=dateCols;
+  const map=new Map();let cur=null,poc="",dev=NaN;
+  b.slice(1).forEach(r=>{const vn=String(r[0]||"").trim();if(vn){cur=vn;poc=pocC>=0?String(r[pocC]||"").trim():"";dev=devC>=0?num(r[devC]):NaN;}
+    const disp=String(r[dispC]||"").trim();if(!cur||!disp)return;
+    if(!map.has(cur))map.set(cur,{name:cur,key:vkey(cur),poc,devices:dev,d:{}});
+    const isRate=/%|productivity/i.test(disp);
+    if(!out.disps.includes(disp)){out.disps.push(disp);if(!isRate)out.hourDisps.push(disp);}
+    const vals=dateCols.map(dc=>isRate?pctOrNum(r[dc.col],disp):n0(r[dc.col]));
+    const tot=totC>=0&&Number.isFinite(num(r[totC]))?(isRate?pctOrNum(r[totC],disp):num(r[totC])):sum(vals);
+    map.get(cur).d[disp]={total:tot,vals,isRate};});
+  out.vendors=[...map.values()];return out;}
+function pctOrNum(v,disp){return /%/.test(disp)?pctVal(v):n0(v);}
+/* ===== model ===== */
+const sevOf=v=>!Number.isFinite(v)?"none":v>=0.35?"high":v>=0.25?"watch":"ok";
+const sevChip=v=>({ok:["good","Fine"],watch:["warn","Watch"],high:["critical","High"],none:["neutral","No data"]})[sevOf(v)];
+function paceStatus(p){return !Number.isFinite(p)?["neutral","No data"]:p>=1?["good","On track"]:p>=0.9?["warn","At risk"]:["critical","Behind"];}
+function backlogStatus(s){return !Number.isFinite(s)?["neutral","No data"]:s<0.2?["good","Low"]:s<0.4?["warn","Building"]:["critical","High"];}
+function buildModel(cat,blocks){
+  const C=CATS[cat];const rev=parseRevenue(blocks["MTD Revenue MIS"]||[]);const ven=parseVendors(blocks["MTD Vendor MIS"]||[]);
+  const dod=C.split?{rec:parseDOD(blocks["DOD MIS (Recorded)"]||[]),upl:parseDOD(blocks["DOD MIS (Uploaded)"]||[])}:{rec:parseDOD(blocks["DOD MIS"]||[])};
+  const days=rev.days;days.forEach(d=>{d.col=d[C.colKey];d.nr=Math.max(0,d.uploaded-d.approved-d.rejected);d.rr=div(d.rejected,d.approved+d.rejected);});
+  const withData=days.filter(d=>d.uploaded>0||d.recorded>0||d.approved>0);
+  const lastDay=withData.length?withData[withData.length-1].day:0;
+  const ref=days[0]?days[0].date:new Date();const dim=new Date(ref.getFullYear(),ref.getMonth()+1,0).getDate();
+  const now=new Date();const todayPartial=now.getFullYear()===ref.getFullYear()&&now.getMonth()===ref.getMonth()&&now.getDate()===lastDay;
+  const fullDays=todayPartial?lastDay-1:lastDay;
+  const m={cat,C,rev,ven,dod,days,lastDay,fullDays,todayPartial,dim,monthLabel:MONTHS[ref.getMonth()]+" "+ref.getFullYear()};
+  const upto=days.filter(d=>d.day<=lastDay);m.upto=upto;
+  const sm=rev.summary;const S=k=>sum(days,d=>d[k]);
+  m.monthTarget=Number.isFinite(num(sm["target"]))?num(sm["target"]):S("target");
+  m.targetToDate=sum(upto,d=>d.target);
+  ["uploaded","recorded","approved","rejected","pending","deferred","col"].forEach(k=>m[k]=S(k));
+  m.reviewed=m.approved+m.rejected;m.nr=Math.max(0,m.uploaded-m.approved-m.rejected);
+  m.approvalRate=div(m.approved,m.reviewed);m.rejectionRate=div(m.rejected,m.reviewed);
+  m.pace=div(m.col,m.targetToDate);
+  m.revenue=num(sm["revenue"]);m.dayAvg=num(sm["day avg"]);m.projection=num(sm["month projection"]);
+  m.ratePerHr=div(m.revenue,Number.isFinite(num(sm["approved"]))?num(sm["approved"]):m.approved);
+  const full=days.filter(d=>d.day<=fullDays);m.projCol=fullDays>0?sum(full,d=>d.col)/fullDays*dim:NaN;
+  const win=(a,b)=>full.filter(d=>d.day>a&&d.day<=b);
+  const w7=win(fullDays-7,fullDays),p7=win(fullDays-14,fullDays-7);
+  m.rr7=div(sum(w7,d=>d.rejected),sum(w7,d=>d.approved+d.rejected));m.rrPrev7=div(sum(p7,d=>d.rejected),sum(p7,d=>d.approved+d.rejected));
+  m.reasonTotals=rev.reasons.map((r,i)=>({name:r.name,hrs:sum(days,d=>d.reasons[i]||0)}));
+  const tracked=sum(m.reasonTotals,r=>r.hrs);m.reasonOther=Math.max(0,m.rejected-tracked);m.reasonCover=div(tracked,m.rejected);
+  // vendors
+  const dodMap=new Map();(dod.rec.vendors||[]).forEach(v=>dodMap.set(v.key,v));
+  const vs=ven.rows.filter(r=>!r.isTotal).map(r=>{const payOk=Number.isFinite(r.payout)&&r.payout>0;
+    const ti=r.reasons.reduce((b,v,i)=>v>(r.reasons[b]||0)?i:b,0);
+    return Object.assign({},r,{key:vkey(r.name),nr:Math.max(0,r.total-r.approved-r.rejected),rr:div(r.rejected,r.approved+r.rejected),gm:payOk?div(r.revenue-r.payout,r.revenue):NaN,payOk,
+      top:r.reasons.length&&r.reasons[ti]>0?ti:-1,topHrs:r.reasons[ti]||0,hasDod:dodMap.has(vkey(r.name))});});
+  const vt={revenue:sum(vs,v=>v.revenue),payout:sum(vs,v=>v.payOk?v.payout:0),total:sum(vs,v=>v.total),approved:sum(vs,v=>v.approved),rejected:sum(vs,v=>v.rejected),pending:sum(vs,v=>v.pending),deferred:sum(vs,v=>v.deferred),nr:sum(vs,v=>v.nr),devices:sum(vs,v=>Number.isFinite(v.devices)?v.devices:0)};
+  vt.rr=div(vt.rejected,vt.approved+vt.rejected);
+  vs.forEach(v=>{v.share=div(v.total,vt.total);v.apprShare=div(v.approved,vt.approved);v.revShare=div(v.revenue,vt.revenue);});
+  m.vendors=vs;m.vt=vt;m.active=vs.filter(v=>v.total>0);
+  m.payoutFilled=vs.some(v=>v.payOk);m.gm=m.payoutFilled?div(vt.revenue-vt.payout,vt.revenue):NaN;
+  // weeks
+  const bounds=[[1,7],[8,14],[15,21],[22,28],[29,dim]];
+  m.weeks=bounds.map(([a,b])=>{const ds=days.filter(d=>d.day>=a&&d.day<=Math.min(b,lastDay));const n=ds.filter(d=>d.day<=lastDay).length;
+    return{a,b:Math.min(b,dim),n,col:sum(ds,d=>d.col),target:sum(ds,d=>d.target),approved:sum(ds,d=>d.approved),rejected:sum(ds,d=>d.rejected),avg:n?sum(ds,d=>d.col)/n:NaN};}).filter(w=>w.n>0);
+  m.weeks.forEach((w,i)=>{w.rr=div(w.rejected,w.approved+w.rejected);w.chg=i?div(w.avg-m.weeks[i-1].avg,m.weeks[i-1].avg):NaN;});
+  m.checks=buildChecks(m);m.takes=buildTakes(m);
+  return m;}
+function buildChecks(m){
+  const out=[],C=m.C,add=(s,t,p)=>out.push({s,t,p});
+  const lastD=m.days.find(d=>d.day===m.lastDay);
+  add("neutral","Data runs to "+(lastD?dayLabel(lastD.date):"–"),m.todayPartial?"The latest day is today, so its figures are still coming in.":"The latest day with data is shown on every page.");
+  if(Number.isFinite(m.revenue)&&m.vendors.length){const d=m.vt.revenue-m.revenue;
+    if(Math.abs(d)>Math.max(1000,0.01*m.revenue))add("warn","Vendor revenue doesn't match the headline","The MTD Vendor MIS tab adds up to "+fmtINR(m.vt.revenue)+", which is "+fmtINR(Math.abs(d))+(d<0?" less":" more")+" than the headline "+fmtINR(m.revenue)+". Vendor pages use the vendor tab; the overview uses the headline.");
+    else add("good","Vendor revenue matches the headline","The vendor tab adds up to "+fmtINR(m.vt.revenue)+".");}
+  if(m.vendors.length){const d=m.vt.approved-m.approved;
+    if(Math.abs(d)>Math.max(5,0.01*m.approved))add("warn","Approved hours differ between tabs","Day-wise rows give "+fmtH(m.approved)+" approved hours; the vendor tab gives "+fmtH(m.vt.approved)+" ("+(d>0?"+":"−")+fmtH(Math.abs(d))+").");
+    const dt=m.vt.total-m.uploaded,dc=m.vt.total-m.col;
+    if(Math.abs(dt)>0.01*m.uploaded&&Math.abs(dc)>0.01*m.col)add("warn","Vendor hours don't match the day-wise totals","The vendor tab has "+fmtH(m.vt.total)+" total hours against "+fmtH(m.col)+" "+C.colLabel.toLowerCase()+(C.colKey!=="uploaded"?" and "+fmtH(m.uploaded)+" uploaded":"")+" hours in the day-wise rows.");}
+  if(m.vendors.length&&!m.payoutFilled)add("warn","Payout isn't filled in","Every vendor's payout is blank, so the tracker shows 100% margin. Gross margin is left out until payouts are added.");
+  if(m.payoutFilled){const g=[...new Set(m.vendors.filter(v=>v.payOk).map(v=>v.gm.toFixed(4)))];
+    if(g.length<=2)add("neutral","Margin follows the rate card","Every vendor on the same rate card shows the same margin, so margin shows the rate difference rather than actual costs.");}
+  const div0=m.vendors.filter(v=>/#DIV/i.test(v.gmRaw));if(div0.length)add("warn","Margin can't be worked out for "+div0.map(v=>v.name).join(", "),"The vendor has no revenue this month, so the tracker's GM shows #DIV/0!.");
+  if(m.vt.deferred>m.vt.total*1.05)add("warn","The deferredHours column looks wrong","It adds up to "+fmtH(m.vt.deferred)+", more than the "+fmtH(m.vt.total)+" total hours, so it isn't used here.");
+  const dodKeys=new Map((m.dod.rec.vendors||[]).map(v=>[v.key,v.name]));
+  const mism=m.vendors.filter(v=>dodKeys.has(v.key)&&dodKeys.get(v.key)!==v.name).map(v=>v.name+" / "+dodKeys.get(v.key));
+  if(mism.length)add("neutral","Vendor names are spelled differently between tabs",mism.join(", ")+". They are matched as the same vendor.");
+  const zero=(m.dod.rec.vendors||[]).filter(v=>{const t=v.d["Total Hours"];return !t||!(t.total>0);});
+  if(zero.length)add("neutral",zero.length+" vendors in the DOD MIS tab have no hours this month",zero.map(v=>v.name).join(", ")+".");
+  if(C.colKey==="recorded"&&m.recorded>0)add("neutral","Uploaded hours are "+(m.uploaded/m.recorded).toFixed(1)+"× recorded hours",fmtH(m.uploaded)+" uploaded against "+fmtH(m.recorded)+" recorded this month. Target progress uses recorded hours, QA uses uploaded hours.");
+  const sa=pctVal(m.rev.sheetTotals["approval %"]);if(Number.isFinite(sa)&&Math.abs(sa-m.approvalRate)>0.01)add("neutral","The tracker's approval rate is "+fmtP(sa,0),"This page shows "+fmtP(m.approvalRate)+" because it divides by reviewed hours for both categories.");
+  return out;}
+function buildTakes(m){
+  const T=[],C=m.C;
+  const ps=paceStatus(m.pace);
+  T.push({st:ps,b:C.colLabel+" hours are at "+fmtP(div(m.col,m.monthTarget),0)+" of the month target",
+    t:fmtH(m.col)+" of "+fmtH(m.monthTarget)+" hrs, "+fmtP(m.pace,0)+" of the "+fmtH(m.targetToDate)+" due so far. At the current daily average the month ends near "+fmtH(m.projCol)+" hrs ("+fmtP(div(m.projCol,m.monthTarget),0)+" of target)."});
+  T.push({st:div(m.approved,m.targetToDate)>=0.7?["good","Healthy"]:div(m.approved,m.targetToDate)>=0.5?["warn","Watch"]:["critical","Low"],b:"Approved hours cover "+fmtP(div(m.approved,m.monthTarget),0)+" of the month target",
+    t:fmtH(m.approved)+" approved hrs have earned "+fmtINR(m.revenue)+" so far; the tracker projects "+fmtINR(m.projection)+" for the month."});
+  const sc=sevChip(m.rejectionRate);const d7=m.rr7-m.rrPrev7;
+  const topR=m.reasonTotals.slice().sort((a,b)=>b.hrs-a.hrs)[0];
+  T.push({st:[sc[0],sc[1]],b:fmtP(m.rejectionRate)+" of reviewed hours were rejected",
+    t:"Last 7 full days: "+fmtP(m.rr7)+(Number.isFinite(d7)?" ("+fmtPts(d7)+" vs the week before)":"")+"."+(topR&&topR.hrs>0?" Top reason: "+topR.name+", "+fmtP(div(topR.hrs,m.rejected),0)+" of rejected hours.":"")});
+  const big=m.active.filter(v=>v.share>=0.05&&Number.isFinite(v.rr));
+  if(big.length>=2){const s=big.slice().sort((a,b)=>a.rr-b.rr);const best=s[0],worst=s[s.length-1];
+    T.push({st:sevChip(worst.rr),b:"Highest rejection among larger vendors: "+worst.name+" at "+fmtP(worst.rr,0),t:"Best: "+best.name+" at "+fmtP(best.rr,0)+". Larger vendors are those with at least 5% of hours."});}
+  const bs=backlogStatus(div(m.nr,m.uploaded));
+  T.push({st:bs,b:fmtP(div(m.nr,m.uploaded),0)+" of uploaded hours have no QA result yet",t:fmtH(m.nr)+" of "+fmtH(m.uploaded)+" uploaded hrs are still pending, deferred or unprocessed."});
+  const top3=m.vendors.slice().sort((a,b)=>b.approved-a.approved).slice(0,3);const c3=div(sum(top3,v=>v.approved),m.vt.approved);
+  if(top3.length>=3)T.push({st:c3>=0.8?["warn","Concentrated"]:["neutral","Spread"],b:"Top 3 vendors deliver "+fmtP(c3,0)+" of approved hours",t:top3.map(v=>v.name).join(", ")+". "+m.active.length+" of "+m.vendors.length+" vendors in the vendor tab recorded hours this month."});
+  return T;}
+/* ===== tooltip ===== */
+const tip=$("tip");
+function showTip(e,title,rows){tip.replaceChildren();const t=document.createElement("div");t.className="t";t.textContent=title;tip.append(t);
+  rows.forEach(r=>{const d=document.createElement("div");d.className="r";const i=document.createElement("i");i.style.background=r.color?`var(${r.color})`:"transparent";if(r.box){i.style.height="8px";i.style.width="8px";i.style.borderRadius="2px";}
+    const s=document.createElement("span");s.textContent=r.label;const b=document.createElement("b");b.textContent=r.value;d.append(i,s,b);tip.append(d);});
+  tip.hidden=false;placeTip(e);}
+function placeTip(e){const p=14;let x=e.clientX+p,y=e.clientY+p;const w=tip.offsetWidth,h=tip.offsetHeight;if(x+w>innerWidth-8)x=e.clientX-w-p;if(y+h>innerHeight-8)y=e.clientY-h-p;tip.style.left=Math.max(8,x)+"px";tip.style.top=Math.max(8,y)+"px";}
+function hideTip(){tip.hidden=true;}
+
+/* ===== svg helpers ===== */
+const NS="http://www.w3.org/2000/svg";
+function S(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a){if(k==="text")e.textContent=a[k];else e.setAttribute(k,a[k]);}if(p)p.appendChild(e);return e;}
+function niceTicks(max,count){if(!(max>0))return[0,1];const raw=max/count,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;const st=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;const t=[];for(let v=0;v<max+st*0.999;v+=st)t.push(+v.toFixed(6));if(t.length<2)t.push(st);return t;}
+function frame(el,h,mg,label){el.replaceChildren();const w=Math.max(240,Math.floor(el.clientWidth||el.getBoundingClientRect().width||640));
+  const svg=S("svg",{viewBox:`0 0 ${w} ${h}`,height:h,role:"img","aria-label":label||""},el);return{svg,w,h,mg,iw:w-mg.l-mg.r,ih:h-mg.t-mg.b};}
+function yAxis(f,ticks,y,fmt){ticks.forEach(t=>{const yy=y(t);S("line",{x1:f.mg.l,x2:f.w-f.mg.r,y1:yy,y2:yy,style:`stroke:var(${t===0?"--axis":"--grid"});stroke-width:1`},f.svg);
+  S("text",{x:f.mg.l-8,y:yy+4,"text-anchor":"end",style:"fill:var(--muted);font-size:11px",text:fmt(t)},f.svg);});}
+function xLabels(f,n,xc,lab){const every=Math.max(1,Math.ceil(n/Math.max(1,f.iw/34)));for(let i=0;i<n;i+=every)S("text",{x:xc(i),y:f.h-6,"text-anchor":"middle",style:"fill:var(--muted);font-size:11px",text:lab(i)},f.svg);}
+function barPath(x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h));return`M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`;}
+const rectPath=(x,y,w,h)=>`M${x},${y}H${x+w}V${y+h}H${x}Z`;
+function emptyEl(t){const d=document.createElement("div");d.className="empty";d.textContent=t;return d;}
+function svgPoint(f,e){const r=f.svg.getBoundingClientRect();return{x:(e.clientX-r.left)*(f.w/r.width),y:(e.clientY-r.top)*(f.h/r.height)};}
+
+/* ===== charts ===== */
+function barChart(el,o){
+  const n=o.labels.length;if(!n){el.replaceChildren(emptyEl("No daily rows yet."));return;}
+  const mg={l:46,r:10,t:10,b:24},f=frame(el,o.h||250,mg,o.aria);
+  const tot=i=>sum(o.stacks,s=>Math.max(0,s.vals[i]||0));
+  const max=Math.max(1,...o.labels.map((_,i)=>Math.max(tot(i),o.target?o.target.vals[i]||0:0))),ticks=niceTicks(max,4),top=ticks[ticks.length-1];
+  const y=v=>mg.t+f.ih*(1-v/top),band=f.iw/n,bw=Math.min(24,band*0.68);
+  yAxis(f,ticks,y,o.yFmt||fmtK);
+  const hl=S("rect",{x:0,y:mg.t,width:0,height:f.ih,style:"fill:var(--hover);opacity:0"},f.svg);
+  for(let i=0;i<n;i++){const x=mg.l+i*band+(band-bw)/2;const sg=o.stacks.map(s=>[s.color,Math.max(0,s.vals[i]||0)]).filter(s=>s[1]>0);let cum=0;
+    sg.forEach((s,k)=>{const y1=y(cum+s[1]),y2=y(cum)-(k>0?2:0);cum+=s[1];if(y2-y1<=0.5)return;S("path",{d:k===sg.length-1?barPath(x,y1,bw,y2-y1,4):rectPath(x,y1,bw,y2-y1),style:`fill:var(${s[0]})`},f.svg);});}
+  if(o.target){let p="";o.target.vals.forEach((v,i)=>{const x0=mg.l+i*band,yy=y(v||0).toFixed(1);p+=(i?"L":"M")+x0.toFixed(1)+","+yy+"L"+(x0+band).toFixed(1)+","+yy;});
+    S("path",{d:p,style:"fill:none;stroke:var(--s-target);stroke-width:1.5;stroke-linejoin:round"},f.svg);}
+  xLabels(f,n,i=>mg.l+i*band+band/2,i=>String(o.labels[i].getDate()));
+  for(let i=0;i<n;i++){const r=S("rect",{x:mg.l+i*band,y:mg.t,width:band,height:f.ih,style:"fill:transparent;cursor:crosshair"},f.svg);
+    const on=e=>{hl.setAttribute("x",mg.l+i*band);hl.setAttribute("width",band);hl.style.opacity=1;const t=o.tip(i);showTip(e,t.title,t.rows);};
+    r.addEventListener("pointerenter",on);r.addEventListener("pointermove",placeTip);r.addEventListener("pointerleave",()=>{hl.style.opacity=0;hideTip();});}
+}
+function lineChart(el,o){
+  const n=o.labels.length;if(!n){el.replaceChildren(emptyEl("No daily rows yet."));return;}
+  const compact=!!o.compact,mg=compact?{l:40,r:10,t:8,b:18}:{l:46,r:o.endLabels?74:12,t:12,b:24},f=frame(el,o.h||250,mg,o.aria);
+  const all=o.series.flatMap(s=>s.vals.filter(v=>v!=null&&Number.isFinite(v)));
+  const max=o.yMax!=null?o.yMax:Math.max(o.minTop||0,...all,0),ticks=compact?[0,niceTicks(max||1,2).pop()]:niceTicks(max||1,4),top=ticks[ticks.length-1];
+  const x=i=>mg.l+(n>1?i*f.iw/(n-1):f.iw/2),y=v=>mg.t+f.ih*(1-Math.min(v,top)/top);
+  yAxis(f,ticks,y,o.yFmt||fmtK);
+  const path=vals=>{let d="",pen=false;vals.forEach((v,i)=>{if(v==null||!Number.isFinite(v)){pen=false;return;}d+=(pen?"L":"M")+x(i).toFixed(1)+","+y(v).toFixed(1);pen=true;});return d;};
+  o.series.forEach(s=>{const d=path(s.vals);if(!d)return;
+    if(s.area){const idx=s.vals.map((v,i)=>v!=null&&Number.isFinite(v)?i:-1).filter(i=>i>=0);S("path",{d:d+`L${x(idx[idx.length-1])},${y(0)}L${x(idx[0])},${y(0)}Z`,style:`fill:var(${s.color});opacity:.1`},f.svg);}
+    S("path",{d,style:`fill:none;stroke:var(${s.color});stroke-width:${s.width||2};stroke-linejoin:round;stroke-linecap:round${s.dash?";stroke-dasharray:5 4":""}`},f.svg);});
+  o.series.forEach(s=>{if(!s.endDot&&!s.endLabel)return;let k=-1;s.vals.forEach((v,i)=>{if(v!=null&&Number.isFinite(v))k=i;});if(k<0)return;
+    if(s.endDot)S("circle",{cx:x(k),cy:y(s.vals[k]),r:4,style:`fill:var(${s.color});stroke:var(--surface);stroke-width:2`},f.svg);
+    if(s.endLabel&&o.endLabels)S("text",{x:x(k)+8,y:y(s.vals[k])+4+(s.labelDy||0),style:`fill:var(${s.labelColor||"--ink"});font-size:12px;font-weight:600`,text:s.endLabel(s.vals[k])},f.svg);});
+  if(compact){S("text",{x:x(0),y:f.h-4,style:"fill:var(--muted);font-size:10.5px",text:dayLabel(o.labels[0])},f.svg);S("text",{x:x(n-1),y:f.h-4,"text-anchor":"end",style:"fill:var(--muted);font-size:10.5px",text:dayLabel(o.labels[n-1])},f.svg);}
+  else xLabels(f,n,x,i=>String(o.labels[i].getDate()));
+  const vl=S("line",{x1:0,x2:0,y1:mg.t,y2:mg.t+f.ih,style:"stroke:var(--axis);stroke-width:1;opacity:0"},f.svg);
+  const dots=o.series.map(s=>S("circle",{r:4,cx:-20,cy:-20,style:`fill:var(${s.color});stroke:var(--surface);stroke-width:2;opacity:0`},f.svg));
+  const ov=S("rect",{x:mg.l,y:mg.t,width:f.iw,height:f.ih,style:"fill:transparent;cursor:crosshair"},f.svg);
+  const mv=e=>{const p=svgPoint(f,e);let i=Math.round((p.x-mg.l)/(n>1?f.iw/(n-1):1));i=Math.max(0,Math.min(n-1,i));vl.setAttribute("x1",x(i));vl.setAttribute("x2",x(i));vl.style.opacity=1;
+    const rows=[];o.series.forEach((s,k)=>{const v=s.vals[i];if(v==null||!Number.isFinite(v)){dots[k].style.opacity=0;return;}dots[k].setAttribute("cx",x(i));dots[k].setAttribute("cy",y(v));dots[k].style.opacity=1;rows.push({color:s.color,label:s.name,value:(s.fmt||o.tipFmt||fmtH)(v)});});
+    showTip(e,(o.tipTitle||(i=>dayLabel(o.labels[i])))(i),rows);};
+  ov.addEventListener("pointermove",mv);ov.addEventListener("pointerenter",mv);ov.addEventListener("pointerleave",()=>{vl.style.opacity=0;dots.forEach(d=>d.style.opacity=0);hideTip();});
+}
+function scatterChart(el,o){
+  const pts=o.pts;if(!pts.length){el.replaceChildren(emptyEl("No vendors with hours yet."));return;}
+  const mg={l:50,r:24,t:14,b:38},f=frame(el,o.h||320,mg,o.aria);
+  const xt=niceTicks(Math.max(...pts.map(p=>p.x),1),5),yt=niceTicks(Math.max(...pts.map(p=>p.y),0.1),4);const xm=xt[xt.length-1],ym=yt[yt.length-1];
+  const x=v=>mg.l+f.iw*(v/xm),y=v=>mg.t+f.ih*(1-v/ym);
+  yAxis(f,yt,y,v=>Math.round(v*100)+"%");
+  xt.forEach(t=>{S("text",{x:x(t),y:f.h-20,"text-anchor":"middle",style:"fill:var(--muted);font-size:11px",text:fmtK(t)},f.svg);});
+  S("text",{x:mg.l+f.iw/2,y:f.h-4,"text-anchor":"middle",style:"fill:var(--muted);font-size:11px",text:o.xTitle||"Total hours"},f.svg);
+  if(Number.isFinite(o.refY))S("line",{x1:mg.l,x2:f.w-mg.r,y1:y(o.refY),y2:y(o.refY),style:"stroke:var(--s-avg);stroke-width:1;stroke-dasharray:4 4"},f.svg);
+  if(Number.isFinite(o.refX))S("line",{x1:x(o.refX),x2:x(o.refX),y1:mg.t,y2:mg.t+f.ih,style:"stroke:var(--s-avg);stroke-width:1;stroke-dasharray:4 4"},f.svg);
+  const col={ok:"--good",watch:"--warn",high:"--critical",none:"--axis"};const boxes=[];
+  pts.slice().sort((a,b)=>b.x-a.x).forEach(p=>{const cx=x(p.x),cy=y(p.y);
+    S("circle",{cx,cy,r:6,style:`fill:var(${col[sevOf(p.y)]});stroke:var(--surface);stroke-width:2`},f.svg);
+    const w=p.label.length*6.4+4,bx=cx+10+w>f.w-4?cx-10-w:cx+10,box={x:bx,y:cy-8,w,h:14};
+    if(!boxes.some(b=>b.x<box.x+box.w&&box.x<b.x+b.w&&b.y<box.y+box.h&&box.y<b.y+b.h)){boxes.push(box);S("text",{x:bx,y:cy+4,style:"fill:var(--ink-2);font-size:11.5px",text:p.label},f.svg);}
+    const hit=S("circle",{cx,cy,r:14,style:"fill:transparent;cursor:pointer"},f.svg);
+    hit.addEventListener("pointerenter",e=>showTip(e,p.label,p.rows));hit.addEventListener("pointermove",placeTip);hit.addEventListener("pointerleave",hideTip);
+    if(p.onClick)hit.addEventListener("click",p.onClick);});
+}
+function hbars(host,items,opt={}){host.replaceChildren();if(!items.length){host.append(emptyEl(opt.empty||"Nothing to show yet."));return;}
+  const max=Math.max(1e-9,...items.map(i=>i.val));
+  items.forEach(it=>{const row=document.createElement("div");row.className="bar-row";
+    const n=document.createElement("div");n.className="name";if(it.onClick){const b=document.createElement("button");b.type="button";b.className="vlink";b.textContent=it.name;b.addEventListener("click",it.onClick);n.append(b);}else n.textContent=it.name;n.title=it.name;
+    const t=document.createElement("div");t.className="track";const s=document.createElement("span");s.style.width=Math.max(0.4,it.val/max*100)+"%";s.style.background=`var(${it.color||"--s-col"})`;t.append(s);
+    const v=document.createElement("div");v.className="val";v.textContent=it.label;if(it.sub){const em=document.createElement("em");em.textContent=it.sub;v.append(em);}
+    row.append(n,t,v);host.append(row);});}
+/* ===== page renderers ===== */
+const state={cat:"domestic",page:"overview",pfMetric:null,basis:"rec",disp:null,vdBasis:"rec",vendor:null,vSort:{key:"total",dir:-1}};
+function setVal(id,main,unit){const e=$(id);e.replaceChildren(document.createTextNode(main));if(unit){const s=document.createElement("small");s.textContent=unit;e.append(s);}}
+const setText=(id,t)=>{$(id).textContent=t;};
+function chipEl(st){const c=document.createElement("span");c.className="chip "+st[0];c.textContent=st[1];return c;}
+function setChip(id,st){const e=$(id);e.replaceChildren();if(st)e.append(chipEl(st));}
+const lastDate=m=>{const d=m.days.find(x=>x.day===m.lastDay);return d?d.date:null;};
+function goVendor(name){state.vendor=name;location.hash="#vendor";}
+function dailyTip(m,i,list){const d=list[i];return{title:dayLabel(d.date)+(m.todayPartial&&d.day===m.lastDay?" (so far)":""),rows:[
+  {label:"Target",value:fmtH1(d.target)},...(m.C.colKey==="recorded"?[{color:"--s-col",label:"Recorded",value:fmtH1(d.recorded)}]:[]),{color:"--s-col",label:"Uploaded",value:fmtH1(d.uploaded)},
+  {color:"--s-appr",label:"Approved",value:fmtH1(d.approved)},{color:"--s-rej",label:"Rejected",value:fmtH1(d.rejected)},{color:"--s-wait",label:"Not reviewed yet",value:fmtH1(d.nr)},
+  {label:"Rejection rate",value:fmtP(d.rr)},{label:m.C.activeLabel,value:fmtN(d.active)}]};}
+function renderOverview(m){
+  const C=m.C,ld=lastDate(m);
+  setText("ov-date","Month to date, data up to "+(ld?dayLabel(ld):"–")+(m.todayPartial?" (today's figures are still coming in)":""));
+  setText("k-col-label",C.colLabel+" hours vs month target");setText("k-col-key",C.colLabel);
+  setVal("k-col",fmtH(m.col),"/ "+fmtH(m.monthTarget)+" hrs");setChip("k-col-chip",paceStatus(m.pace));
+  const mt=m.monthTarget>0?m.monthTarget:1,me=$("k-meter");me.children[0].style.width=Math.min(100,m.col/mt*100)+"%";me.children[1].style.width=Math.min(100,m.approved/mt*100)+"%";me.children[2].style.left="calc("+Math.min(100,m.targetToDate/mt*100)+"% - 1px)";
+  setText("k-col-sub",fmtP(div(m.col,m.monthTarget))+" of the month target. "+fmtP(m.pace,0)+" of the "+fmtH(m.targetToDate)+" hrs due by "+(ld?dayLabel(ld):"today")+".");
+  setVal("k-appr",fmtH(m.approved),"hrs");setText("k-appr-sub",fmtP(div(m.approved,m.monthTarget),0)+" of the month target");
+  setVal("k-rev",fmtINR(m.revenue));setText("k-rev-sub",(Number.isFinite(m.ratePerHr)?"₹"+fmtN(Math.round(m.ratePerHr))+" per approved hr · ":"")+fmtINR(m.dayAvg)+" a day on average");
+  setVal("k-proj",fmtINR(m.projection));setText("k-proj-sub","From the tracker. "+C.colLabel+" hours at the current pace: "+fmtH(m.projCol)+" ("+fmtP(div(m.projCol,m.monthTarget),0)+" of target).");
+  if(m.payoutFilled){setVal("k-gm",fmtP(m.gm));setText("k-gm-sub",fmtINR(m.vt.revenue)+" revenue against "+fmtINR(m.vt.payout)+" payout in the vendor tab");}
+  else{setVal("k-gm","Not filled");setText("k-gm-sub","Payout is blank in the vendor tab, so margin can't be worked out.");}
+  setVal("k-apr",fmtP(m.approvalRate));const sc=sevChip(m.rejectionRate);setChip("k-apr-chip",[sc[0],sc[0]==="critical"?"High rejections":sc[1]]);
+  setText("k-apr-sub",fmtH(m.approved)+" of "+fmtH(m.reviewed)+" reviewed hrs");
+  setVal("k-nr",fmtH(m.nr),"hrs");setChip("k-nr-chip",backlogStatus(div(m.nr,m.uploaded)));setText("k-nr-sub",fmtP(div(m.nr,m.uploaded),0)+" of "+fmtH(m.uploaded)+" uploaded hrs");
+  const ul=$("ov-takes");ul.replaceChildren();
+  m.takes.forEach(t=>{const li=document.createElement("li");const b=document.createElement("b");b.textContent=t.b;const s=document.createElement("span");s.textContent=t.t;li.append(chipEl(t.st),b,s);ul.append(li);});
+  renderPace($("ov-pace"),m,230);
+  const segs=[["Approved","--s-appr",m.approved],["Rejected","--s-rej",m.rejected],["Not reviewed yet","--s-wait",m.nr]];
+  const st=$("ov-stack");st.replaceChildren();const up=m.uploaded>0?m.uploaded:1;
+  segs.forEach(([n,c,v])=>{if(v<=0)return;const s=document.createElement("span");s.style.width=(v/up*100)+"%";s.style.background=`var(${c})`;s.title=n+": "+fmtH(v)+" hrs";st.append(s);});
+  hbars($("ov-stack-list"),segs.map(([n,c,v])=>({name:n,val:v,color:c,label:fmtH(v)+" hrs",sub:fmtP(div(v,m.uploaded),0)})));
+  setText("ov-stack-desc","Share of the "+fmtH(m.uploaded)+" uploaded hours by QA result.");
+  const tv=m.vendors.filter(v=>v.approved>0).sort((a,b)=>b.approved-a.approved).slice(0,8);
+  hbars($("ov-topv"),tv.map(v=>({name:v.name,val:v.approved,color:"--s-appr",label:fmtH(v.approved)+" hrs",sub:fmtP(v.apprShare,0),onClick:()=>goVendor(v.name)})),{empty:"No vendor has approved hours yet."});
+  setText("ov-topv-desc","Share of the vendor tab's "+fmtH(m.vt.approved)+" approved hours. Click a vendor for detail.");
+}
+function renderPace(el,m,h){
+  const L=m.days.map(d=>d.date);let t=0,a=0,b=0;const cT=[],cC=[],cA=[];
+  m.days.forEach(d=>{t+=d.target;cT.push(t);if(d.day<=m.lastDay){a+=d.col;b+=d.approved;cC.push(a);cA.push(b);}else{cC.push(null);cA.push(null);}});
+  lineChart(el,{labels:L,h,endLabels:true,aria:"Cumulative hours against cumulative target",tipTitle:i=>"Up to "+dayLabel(L[i]),
+    series:[{name:"Target",color:"--s-target",vals:cT,width:1.5,endLabel:fmtH,labelColor:"--ink-2"},
+      {name:m.C.colLabel,color:"--s-col",vals:cC,area:true,endDot:true,endLabel:fmtH},
+      {name:"Approved",color:"--s-appr",vals:cA,endDot:true,endLabel:fmtH}]});
+}
+function renderPerformance(m){
+  const C=m.C,opts=C.colKey==="recorded"?[["recorded","Recorded"],["uploaded","Uploaded"],["approved","Approved"]]:[["uploaded","Uploaded"],["approved","Approved"]];
+  if(!state.pfMetric||!opts.some(o=>o[0]===state.pfMetric))state.pfMetric=C.colKey;
+  const sg=$("pfSeg");sg.replaceChildren(...opts.map(([v,l])=>{const b=document.createElement("button");b.type="button";b.dataset.v=v;b.textContent=l;b.setAttribute("aria-pressed",String(v===state.pfMetric));return b;}));
+  const k=state.pfMetric,L=m.days.map(d=>d.date);
+  barChart($("pf-daily"),{labels:L,aria:"Daily hours with target",stacks:[{color:k==="approved"?"--s-appr":"--s-col",vals:m.days.map(d=>d[k])}],target:{vals:m.days.map(d=>d.target)},tip:i=>dailyTip(m,i,m.days)});
+  const U=m.upto;
+  barChart($("pf-qa"),{labels:U.map(d=>d.date),aria:"QA outcome of uploaded hours by day",stacks:[{color:"--s-appr",vals:U.map(d=>d.approved)},{color:"--s-rej",vals:U.map(d=>d.rejected)},{color:"--s-wait",vals:U.map(d=>d.nr)}],tip:i=>dailyTip(m,i,U)});
+  setText("pf-active-title",C.activeLabel+" per day");
+  lineChart($("pf-active"),{labels:U.map(d=>d.date),aria:C.activeLabel+" per day",tipFmt:v=>fmtN(v),yFmt:v=>fmtK(v),series:[{name:C.activeLabel,color:"--s-col",vals:U.map(d=>d.active),area:true,endDot:true}]});
+  const wt=$("pf-weekly");wt.tHead.replaceChildren();wt.tBodies[0].replaceChildren();
+  const hr=document.createElement("tr");["Week","Days with data",C.colLabel+" hrs","Target","% of target","Approved hrs","Rejection rate","Avg per day","Change vs week before"].forEach(h=>{const th=document.createElement("th");th.scope="col";th.textContent=h;hr.append(th);});wt.tHead.append(hr);
+  const mon=MONTHS[(m.days[0]||{date:new Date()}).date.getMonth()].slice(0,3);
+  m.weeks.forEach(w=>{const tr=wt.tBodies[0].insertRow();[w.a+"–"+w.b+" "+mon,String(w.n),fmtH(w.col),fmtH(w.target),fmtP(div(w.col,w.target),0),fmtH(w.approved),fmtP(w.rr),fmtH(w.avg),Number.isFinite(w.chg)?(w.chg>0?"+":"")+fmtP(w.chg,0):"–"].forEach((v,i)=>{const td=tr.insertCell();td.textContent=v;if(i===8&&Number.isFinite(w.chg))td.style.color=w.chg<0?"var(--critical-text)":"var(--good-text)";});});
+  const dt=$("pf-days");dt.tHead.replaceChildren();dt.tBodies[0].replaceChildren();
+  const heads=["Date","Target"].concat(C.colKey==="recorded"?["Recorded"]:[],["Uploaded","Approved","Rejected","Not reviewed","Rejection rate",C.activeLabel,"Devices"],m.rev.reasons.map(r=>r.name+" hrs"),["Screenshots"]);
+  const h2=document.createElement("tr");heads.forEach(h=>{const th=document.createElement("th");th.scope="col";th.textContent=h;h2.append(th);});dt.tHead.append(h2);
+  const add=(cells,cls)=>{const tr=dt.tBodies[0].insertRow();if(cls)tr.className=cls;cells.forEach(c=>{const td=tr.insertCell();if(c instanceof Node)td.append(c);else td.textContent=c;});};
+  add(["Month to date",fmtH(m.targetToDate)].concat(C.colKey==="recorded"?[fmtH(m.recorded)]:[],[fmtH(m.uploaded),fmtH(m.approved),fmtH(m.rejected),fmtH(m.nr),fmtP(m.rejectionRate),"",""],m.reasonTotals.map(r=>fmtH(r.hrs)),[""]),"total");
+  U.slice().reverse().forEach(d=>{let a="";if(/^https:\/\//.test(d.shot)){a=document.createElement("a");a.href=d.shot;a.target="_blank";a.rel="noopener";a.textContent="View";}
+    add([dayLabel(d.date)+(m.todayPartial&&d.day===m.lastDay?" (so far)":""),fmtH1(d.target)].concat(C.colKey==="recorded"?[fmtH1(d.recorded)]:[],[fmtH1(d.uploaded),fmtH1(d.approved),fmtH1(d.rejected),fmtH1(d.nr),fmtP(d.rr),fmtN(d.active),fmtN(d.devices)],d.reasons.map(v=>fmtH1(v)),[a]));});
+}
+function renderQuality(m){
+  setVal("q-rr",fmtP(m.rejectionRate));setChip("q-rr-chip",sevChip(m.rejectionRate));setText("q-rr-sub",fmtH(m.rejected)+" of "+fmtH(m.reviewed)+" reviewed hrs");
+  setVal("q-rr7",fmtP(m.rr7));const d7=m.rr7-m.rrPrev7;setText("q-rr7-sub","Week before: "+fmtP(m.rrPrev7)+(Number.isFinite(d7)?" ("+fmtPts(d7)+")":""));
+  const rs=m.reasonTotals.slice().sort((a,b)=>b.hrs-a.hrs);const top=rs[0];
+  setVal("q-top",top&&top.hrs>0?top.name:"–");setText("q-top-sub",top&&top.hrs>0?fmtH(top.hrs)+" hrs, "+fmtP(div(top.hrs,m.rejected),0)+" of rejected hours":"");
+  setVal("q-rej",fmtH(m.rejected),"hrs");setText("q-rej-sub","The tracker breaks out "+m.reasonTotals.length+" reasons, covering "+fmtP(m.reasonCover,0)+" of these hours.");
+  const U=m.upto,L=U.map(d=>d.date),rr=U.map(d=>Number.isFinite(d.rr)?d.rr:null);
+  const roll=U.map((d,i)=>{const w=U.slice(Math.max(0,i-6),i+1);const v=div(sum(w,x=>x.rejected),sum(w,x=>x.approved+x.rejected));return Number.isFinite(v)?v:null;});
+  lineChart($("q-trend"),{labels:L,aria:"Daily rejection rate with 7-day average",yFmt:v=>Math.round(v*100)+"%",tipFmt:v=>fmtP(v),minTop:0.1,
+    series:[{name:"Daily",color:"--s-rej",vals:rr,endDot:true},{name:"7-day average",color:"--s-avg",vals:roll,dash:true,width:2}]});
+  hbars($("q-reasons"),rs.map(r=>({name:r.name,val:r.hrs,color:"--s-rej",label:fmtH(r.hrs)+" hrs",sub:fmtP(div(r.hrs,m.rejected),0)})).concat([{name:"Other reasons",val:m.reasonOther,color:"--axis",label:fmtH(m.reasonOther)+" hrs",sub:fmtP(div(m.reasonOther,m.rejected),0)}]));
+  setText("q-reasons-desc","Rejected hours by reason, with each reason's share of all rejected hours. Other covers reasons the tracker doesn't break out.");
+  const col={ok:"--good",watch:"--warn",high:"--critical",none:"--axis"};
+  hbars($("q-vrank"),m.active.filter(v=>Number.isFinite(v.rr)).sort((a,b)=>b.rr-a.rr).map(v=>({name:v.name,val:v.rr,color:col[sevOf(v.rr)],label:fmtP(v.rr,0),sub:fmtH(v.total)+" hrs",onClick:()=>goVendor(v.name)})),{empty:"No vendor has reviewed hours yet."});
+  const host=$("q-minis");host.replaceChildren();if(!U.length)return;
+  const maxR=Math.max(1,...U.flatMap(d=>d.reasons));
+  m.rev.reasons.forEach((r,i)=>{const box=document.createElement("div");box.className="mini";const h=document.createElement("h4");h.textContent=r.name;const s=document.createElement("div");s.className="mv";s.textContent=fmtH(m.reasonTotals[i].hrs)+" hrs this month";const ch=document.createElement("div");ch.className="chart";box.append(h,s,ch);host.append(box);
+    lineChart(ch,{labels:L,compact:true,h:96,yMax:maxR,aria:r.name+" rejected hours per day",tipFmt:v=>fmtH1(v)+" hrs",series:[{name:r.name,color:"--s-rej",vals:U.map(d=>d.reasons[i]||0),area:true,endDot:true}]});});
+}
+const VCOLS=[{k:"name",l:"Vendor",t:"name"},{k:"share",l:"Share of hours",t:"share"},{k:"total",l:"Total hrs",t:"h"},{k:"approved",l:"Approved hrs",t:"h"},{k:"rejected",l:"Rejected hrs",t:"h"},
+  {k:"rr",l:"Rejection rate",t:"rr"},{k:"nr",l:"Not reviewed hrs",t:"h"},{k:"revenue",l:"Revenue",t:"inr"},{k:"payout",l:"Payout",t:"pay"},{k:"gm",l:"GM",t:"gm"},
+  {k:"devices",l:"Devices",t:"n"},{k:"prod",l:"Avg productivity",t:"prod"},{k:"topHrs",l:"Top rejection reason",t:"top"}];
+function renderVendors(m){
+  const tbl=$("v-table"),th=tbl.tHead,tb=tbl.tBodies[0];th.replaceChildren();tb.replaceChildren();
+  if(!m.vendors.length){const tr=tb.insertRow(),td=tr.insertCell();td.colSpan=VCOLS.length;td.className="muted";td.textContent="No vendor rows in the MTD Vendor MIS tab yet.";}
+  else{
+    const hr=document.createElement("tr");
+    VCOLS.forEach(c=>{const h=document.createElement("th");h.scope="col";const on=state.vSort.key===c.k;h.setAttribute("aria-sort",on?(state.vSort.dir<0?"descending":"ascending"):"none");
+      const b=document.createElement("button");b.type="button";b.textContent=c.l+(on?(state.vSort.dir<0?" ↓":" ↑"):"");b.addEventListener("click",()=>{state.vSort=on?{key:c.k,dir:-state.vSort.dir}:{key:c.k,dir:c.t==="name"?1:-1};renderVendors(m);});h.append(b);hr.append(h);});
+    th.append(hr);
+    const {key,dir}=state.vSort;const rows=m.vendors.slice().sort((a,b)=>{const za=!(a.total>0||a.revenue>0),zb=!(b.total>0||b.revenue>0);if(za!==zb)return za?1:-1;
+      let x=a[key],y=b[key];if(typeof x==="string")return x.localeCompare(y)*dir;x=Number.isFinite(x)?x:-Infinity;y=Number.isFinite(y)?y:-Infinity;return(x-y)*dir;});
+    const cell=(tr,v,c,tot)=>{const td=tr.insertCell(),x=v[c.k];
+      switch(c.t){
+        case"name":if(tot){td.textContent=x;break;}{const b=document.createElement("button");b.type="button";b.className="vlink";b.textContent=x;b.addEventListener("click",()=>goVendor(x));td.append(b);}break;
+        case"share":if(tot){td.textContent="100%";break;}{const w=document.createElement("span");w.className="cellbar";const i=document.createElement("i");i.style.width=Math.max(2,(x||0)*56)+"px";const s=document.createElement("span");s.textContent=fmtP(x,0);w.append(i,s);td.append(w);}break;
+        case"h":td.textContent=fmtH(x);break;
+        case"rr":{const s=document.createElement("span");s.className="sev";s.dataset.s=sevOf(x);s.textContent=fmtP(x);td.append(s);}break;
+        case"inr":td.textContent=fmtINRfull(x);break;
+        case"pay":if(tot?m.payoutFilled:v.payOk)td.textContent=fmtINRfull(x);else{td.textContent="Not filled";td.className="muted";}break;
+        case"gm":if(Number.isFinite(x))td.textContent=fmtP(x);else{td.textContent="–";td.className="muted";}break;
+        case"n":if(Number.isFinite(x)&&x>0)td.textContent=fmtN(x);else{td.textContent="–";td.className="muted";}break;
+        case"prod":if(tot){td.textContent="";break;}if(Number.isFinite(x))td.textContent=fmtN(x,2);else{td.textContent=v.prodText?"Not recorded":"–";td.className="muted";}break;
+        case"top":if(tot){td.textContent="";break;}if(v.top>=0){td.textContent=m.ven.reasons[v.top].name+" · "+fmtH1(v.topHrs)+" hrs";td.className="left";}else{td.textContent="–";td.className="muted";}break;}};
+    rows.forEach(v=>{const tr=tb.insertRow();if(!(v.total>0||v.revenue>0))tr.className="dim";VCOLS.forEach(c=>cell(tr,v,c,false));});
+    const t=Object.assign({name:"All vendors",share:1,gm:m.gm},m.vt);const tr=tb.insertRow();tr.className="total";VCOLS.forEach(c=>cell(tr,t,c,true));
+  }
+  const act=m.active.filter(v=>Number.isFinite(v.rr));
+  scatterChart($("v-scatter"),{aria:"Vendor volume against rejection rate",refY:m.vt.rr,refX:act.length?sum(act,v=>v.total)/act.length:NaN,
+    pts:act.map(v=>({x:v.total,y:v.rr,label:v.name,onClick:()=>goVendor(v.name),rows:[{label:"Total hours",value:fmtH(v.total)},{label:"Approved",value:fmtH(v.approved)},{label:"Rejection rate",value:fmtP(v.rr)},{label:"Revenue",value:fmtINR(v.revenue)}]}))});
+  renderHeat(m);
+}
+function hexRgb(h){h=String(h).trim().replace("#","");if(h.length===3)h=h.split("").map(c=>c+c).join("");const n=parseInt(h,16);return Number.isFinite(n)?[(n>>16)&255,(n>>8)&255,n&255]:[200,200,200];}
+const heatColor=(t,lo,hi)=>"rgb("+lo.map((v,i)=>Math.round(v+(hi[i]-v)*t)).join(",")+")";
+function curDod(m,basis){return m.C.split&&basis==="upl"?m.dod.upl:m.dod.rec;}
+function renderHeat(m){
+  $("basisSeg").hidden=!m.C.split;
+  const dod=curDod(m,state.basis),host=$("heat"),scale=$("heatScale"),sel=$("dispSel");host.replaceChildren();scale.replaceChildren();
+  if(!dod.vendors.length){host.append(emptyEl("No rows in the DOD MIS tab yet."));sel.replaceChildren();return;}
+  if(!state.disp||!dod.hourDisps.includes(state.disp))state.disp=dod.hourDisps.find(d=>/total/i.test(d))||dod.hourDisps[0];
+  sel.replaceChildren(...dod.hourDisps.map(d=>{const o=document.createElement("option");o.value=d;o.textContent=d;o.selected=d===state.disp;return o;}));
+  const days=dod.days.filter(d=>!m.lastDay||d.day<=m.lastDay),n=days.length,disp=state.disp;
+  const vs=dod.vendors.map(v=>({v,row:v.d[disp]})).filter(x=>x.row&&x.row.vals.some(y=>y>0)).sort((a,b)=>b.row.total-a.row.total);
+  const cs=getComputedStyle(document.documentElement),lo=hexRgb(cs.getPropertyValue("--heat-lo")||"#dbe9fb"),hi=hexRgb(cs.getPropertyValue("--heat-hi")||"#104281");
+  const max=Math.max(1,...vs.flatMap(x=>x.row.vals.slice(0,n)));
+  const a=document.createElement("span");a.textContent="0";const r=document.createElement("span");r.className="ramp";r.style.background="linear-gradient(90deg,"+heatColor(0,lo,hi)+","+heatColor(1,lo,hi)+")";
+  const b=document.createElement("span");b.textContent=fmtH1(max)+" hrs in a day";const note=document.createElement("span");note.style.marginLeft="12px";note.textContent=vs.length+" vendors with hours"+(dod.vendors.length>vs.length?" · "+(dod.vendors.length-vs.length)+" with none are left out":"");
+  scale.append(a,r,b,note);
+  setText("heat-desc",(m.C.split?(state.basis==="upl"?"Counted on the day hours were uploaded":"Counted on the day hours were recorded"):"Daily hours per vendor")+", from the DOD MIS tab"+(m.C.split?"s":"")+". Darker cells mean more hours.");
+  if(!vs.length){host.append(emptyEl("No vendor has "+disp+" on this basis yet."));return;}
+  host.style.gridTemplateColumns="minmax(150px,220px) repeat("+n+",minmax(16px,1fr))";host.append(document.createElement("div"));
+  days.forEach(d=>{const e=document.createElement("div");e.className="hd";e.textContent=d.day;host.append(e);});
+  vs.forEach(({v,row})=>{const l=document.createElement("div");l.className="hl";const nm=document.createElement("span");nm.textContent=v.name;nm.title=v.name;const tt=document.createElement("b");tt.textContent=fmtH(row.total);l.append(nm,tt);host.append(l);
+    row.vals.slice(0,n).forEach((val,i)=>{const c=document.createElement("div");c.className="hc";if(val>0)c.style.background=heatColor(Math.sqrt(val/max),lo,hi);
+      c.addEventListener("pointerenter",e=>showTip(e,v.name+" · "+(days[i].date?dayLabel(days[i].date):"Day "+days[i].day),[{color:"--s-col",box:true,label:disp,value:fmtH1(val)+" hrs"},{label:"Month to date",value:fmtH(row.total)+" hrs"}]));
+      c.addEventListener("pointermove",placeTip);c.addEventListener("pointerleave",hideTip);host.append(c);});});
+}
+function renderVendorDetail(m){
+  const sel=$("vdSel");const list=m.vendors.slice().sort((a,b)=>b.total-a.total);
+  if(!list.length){sel.replaceChildren();setText("vd-sub","No vendors in the MTD Vendor MIS tab yet.");return;}
+  if(!state.vendor||!list.some(v=>v.name===state.vendor))state.vendor=list[0].name;
+  sel.replaceChildren(...list.map(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+(v.total>0?"":" (no hours)");o.selected=v.name===state.vendor;return o;}));
+  const v=list.find(x=>x.name===state.vendor),rank=list.filter(x=>x.total>0).findIndex(x=>x.name===v.name)+1;
+  const dv=(m.dod.rec.vendors||[]).find(x=>x.key===v.key);
+  setText("vd-sub",[v.name,dv&&dv.poc?"POC: "+dv.poc:"",Number.isFinite(v.devices)&&v.devices>0?fmtN(v.devices)+" devices":""].filter(Boolean).join(" · "));
+  setVal("vd-tot",fmtH(v.total),"hrs");setText("vd-tot-sub",fmtP(v.share,0)+" of vendor hours"+(rank>0?" · #"+rank+" of "+m.active.length:""));
+  setVal("vd-appr",fmtH(v.approved),"hrs");setText("vd-appr-sub",fmtP(v.apprShare,0)+" of the category's approved hours");
+  setVal("vd-rr",fmtP(v.rr));setChip("vd-rr-chip",sevChip(v.rr));setText("vd-rr-sub","Category: "+fmtP(m.vt.rr)+(Number.isFinite(v.rr-m.vt.rr)?" ("+fmtPts(v.rr-m.vt.rr)+")":""));
+  setVal("vd-rev",fmtINR(v.revenue));setText("vd-rev-sub",v.payOk?"Payout "+fmtINR(v.payout)+" · margin "+fmtP(v.gm):fmtP(v.revShare,0)+" of vendor revenue · payout not filled");
+  $("vdBasis").hidden=!m.C.split;setText("vd-name-key",v.name);
+  const dod=curDod(m,state.vdBasis),dvv=dod.vendors.find(x=>x.key===v.key);
+  const days=dod.days.filter(d=>!m.lastDay||d.day<=m.lastDay),L=days.map(d=>d.date||new Date(2000,0,d.day)),n=days.length;
+  const g=k=>dvv&&dvv.d[k]?dvv.d[k].vals.slice(0,n):days.map(()=>0);
+  const T=g("Total Hours"),A=g("Approved"),R=g("Rejected");
+  setText("vd-daily-desc",(m.C.split?(state.vdBasis==="upl"?"By uploaded date":"By recorded date")+", from the DOD MIS tabs.":"From the DOD MIS tab.")+(dvv?"":" This vendor has no rows there."));
+  barChart($("vd-daily"),{labels:L,aria:"Vendor daily hours",stacks:[{color:"--s-appr",vals:A},{color:"--s-rej",vals:R},{color:"--s-wait",vals:T.map((t,i)=>Math.max(0,t-A[i]-R[i]))}],
+    tip:i=>({title:v.name+" · "+dayLabel(L[i]),rows:[{label:"Total hours",value:fmtH1(T[i])},{color:"--s-appr",label:"Approved",value:fmtH1(A[i])},{color:"--s-rej",label:"Rejected",value:fmtH1(R[i])},{label:"Rejection rate",value:fmtP(div(R[i],A[i]+R[i]))}]})});
+  const catA=days.map((_,i)=>sum(dod.vendors,x=>x.d.Approved?x.d.Approved.vals[i]||0:0)),catR=days.map((_,i)=>sum(dod.vendors,x=>x.d.Rejected?x.d.Rejected.vals[i]||0:0));
+  const rate=(a,r)=>{const x=div(r,a+r);return Number.isFinite(x)?x:null;};
+  lineChart($("vd-rate"),{labels:L,aria:"Vendor rejection rate against the category",yFmt:x=>Math.round(x*100)+"%",tipFmt:x=>fmtP(x),minTop:0.1,
+    series:[{name:v.name,color:"--s-rej",vals:days.map((_,i)=>rate(A[i],R[i])),endDot:true},{name:"Whole category",color:"--s-avg",vals:days.map((_,i)=>rate(catA[i],catR[i])),dash:true}]});
+  const rs=m.ven.reasons.map((r,i)=>({name:r.name,hrs:v.reasons[i]||0})).sort((a,b)=>b.hrs-a.hrs);const oth=Math.max(0,v.rejected-sum(rs,r=>r.hrs));
+  hbars($("vd-reasons"),rs.map(r=>({name:r.name,val:r.hrs,color:"--s-rej",label:fmtH1(r.hrs)+" hrs",sub:fmtP(div(r.hrs,v.rejected),0)})).concat(v.rejected>0?[{name:"Other reasons",val:oth,color:"--axis",label:fmtH1(oth)+" hrs",sub:fmtP(div(oth,v.rejected),0)}]:[]),{empty:"No rejected hours this month."});
+  const facts=$("vd-facts");facts.replaceChildren();
+  [["Pending QA",fmtH1(v.pending)+" hrs"],["Not reviewed yet",fmtH(v.nr)+" hrs ("+fmtP(div(v.nr,v.total),0)+" of its hours)"],["Avg productivity",Number.isFinite(v.prod)?fmtN(v.prod,2)+" hrs per device a day":(v.prodText||"–")]].forEach(([a,b])=>{const d=document.createElement("div");const dt=document.createElement("dt");dt.textContent=a;const dd=document.createElement("dd");dd.textContent=b;d.append(dt,dd);facts.append(d);});
+}
+function renderNotes(m){
+  const ul=$("n-checks");ul.replaceChildren();
+  m.checks.forEach(c=>{const li=document.createElement("li");const lab={good:"OK",warn:"Check",neutral:"Note",critical:"Fix"}[c.s];const d=document.createElement("div");const b=document.createElement("b");b.textContent=c.t;const p=document.createElement("p");p.textContent=c.p;d.append(b,p);li.append(chipEl([c.s,lab]),d);ul.append(li);});
+  const dl=$("n-sources");dl.replaceChildren();const C=m.C,st=store[m.cat];
+  const link=(t,h)=>{const a=document.createElement("a");a.href=h;a.target="_blank";a.rel="noopener";a.textContent=t;return a;};
+  [["Tracker",C.tracker?link(C.label+" tracker",C.tracker):"–"],["Live feed",C.feed?link("Feed sheet for "+C.label,"https://docs.google.com/spreadsheets/d/"+C.feed+"/edit"):"–"],["Tabs used",C.tabs.join(", ")],["Last loaded",st.ts?new Date(st.ts).toLocaleString([], {day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})+" from "+st.src:"–"]].forEach(([a,b])=>{const d=document.createElement("div");const dt=document.createElement("dt");dt.textContent=a;const dd=document.createElement("dd");if(b instanceof Node)dd.append(b);else dd.textContent=b;d.append(dt,dd);dl.append(d);});
+}
+/* ===== state, routing ===== */
+const store={};Object.keys(CATS).forEach(k=>store[k]={model:null,ts:0,src:"",status:["wait","Connecting…"],notice:null});
+const PAGES=["overview","performance","quality","vendors","vendor","notes"];
+const RENDER={overview:renderOverview,performance:renderPerformance,quality:renderQuality,vendors:renderVendors,vendor:renderVendorDetail,notes:renderNotes};
+let LIVE=null,standalone=false;
+function renderCurrent(){
+  const cat=state.cat,C=CATS[cat],st=store[cat];document.body.dataset.cat=cat;
+  $("catSwitch").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.cat===cat)));
+  document.querySelectorAll("[data-catname]").forEach(e=>e.textContent=C.label);
+  document.querySelectorAll("[data-collabel]").forEach(e=>e.textContent=C.colLabel);
+  const tl=$("trackerLink");if(C.tracker){tl.href=C.tracker;tl.hidden=false;tl.textContent="Open "+C.label+" tracker";}else tl.hidden=true;
+  $("status").dataset.state=st.status[0];setText("statusText",C.label+" · "+st.status[1]);
+  const n=$("notice");if(st.notice){n.dataset.kind=st.notice.kind;setText("noticeTitle",st.notice.title);const p=$("noticeBody");p.replaceChildren(document.createTextNode(st.notice.body));
+    if(st.notice.link){p.append(" ");const a=document.createElement("a");a.href=st.notice.link[1];a.target="_blank";a.rel="noopener";a.textContent=st.notice.link[0];p.append(a);}n.hidden=false;}else n.hidden=true;
+  $("loader").hidden=!(standalone&&!st.model);
+  $("nav").querySelectorAll("a").forEach(a=>a.setAttribute("aria-current",a.dataset.page===state.page?"page":"false"));
+  PAGES.forEach(p=>{$("p-"+p).hidden=!(st.model&&p===state.page);});
+  setText("monthLabel",st.model?st.model.monthLabel:"");
+  $("foot").textContent=st.model?"Data: "+C.tabs.join(", ")+" from the "+C.label+" tracker. Figures refresh automatically"+(LIVE?" every "+CFG.refreshMinutes+" minutes while this page is open.":" when you load a newer file."):"";
+  if(st.model){try{RENDER[state.page](st.model);}catch(e){console.error(e);}}
+}
+function setCat(cat){if(!CATS[cat])return;state.cat=cat;state.vendor=null;state.disp=null;state.pfMetric=null;try{localStorage.setItem("mecka.cat",cat);}catch(e){}renderCurrent();}
+function fromHash(){const h=(location.hash||"").replace("#","");state.page=PAGES.includes(h)?h:"overview";renderCurrent();window.scrollTo(0,0);}
+
+/* ===== loading ===== */
+function applyBlocks(cat,blocks,src,ts){
+  const C=CATS[cat],st=store[cat],sts=C.tabs.map(t=>blockState(blocks[t]));
+  const feedLink=C.feed?["Open the "+C.label+" feed sheet","https://docs.google.com/spreadsheets/d/"+C.feed+"/edit"]:null;
+  if(sts.some(s=>/^error:#REF/i.test(s))){st.status=["wait","Feed needs access"];st.notice={kind:"warn",title:"The "+C.label+" feed sheet needs one-time access to its tracker",body:"Open the feed, click cell B4 (it shows #REF!) and press Allow access. This page picks the data up on its next refresh.",link:feedLink};}
+  else if(sts.some(s=>s==="loading")){st.status=["wait","Feed is loading"];st.notice={kind:"warn",title:"The "+C.label+" feed is still pulling data",body:"This page updates on its own in a few minutes."};}
+  else if(sts.every(s=>s!=="ok")){st.status=["error","No tracker data"];st.notice={kind:"error",title:"No "+C.label+" tracker data found",body:"None of the expected tabs ("+C.tabs.join(", ")+") came through. Check the tracker link in cell B1 of the feed and the tab names.",link:feedLink};}
+  else{const m=buildModel(cat,blocks);
+    if(!m.days.length){st.status=["error","No daily rows"];st.notice={kind:"error",title:"No day-wise rows in "+C.label+" MTD Revenue MIS",body:"The tab came through without a Date column. Check its layout in the tracker."};}
+    else{st.model=m;st.ts=ts||Date.now();st.src=src;const bad=C.tabs.filter((t,i)=>sts[i]!=="ok");
+      st.notice=bad.length?{kind:"warn",title:"Some "+C.label+" sections have no data",body:"These tabs didn't come through: "+bad.join(", ")+". Everything else is current."}:null;
+      st.status=[src==="live feed"?"live":"file",(src==="live feed"?"Live · updated ":"Loaded ")+new Date(st.ts).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})];}}
+  if(cat===state.cat)renderCurrent();
+}
+function decodeB64(b64){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder("utf-8").decode(u);}
+function onLive(cat,ev){document.body.classList.remove("loading");
+  if(ev.type==="data"){let p=ev.result&&ev.result.payload;if(typeof p==="string"){try{p=JSON.parse(p);}catch(e){}}
+    const b64=p&&typeof p==="object"?p.content:null;const st=store[cat];
+    if(!b64){st.status=["error","Empty response"];st.notice={kind:"error",title:"Google Drive sent back an empty "+CATS[cat].label+" feed",body:"Check that the feed sheet still exists and that you can open it."};if(cat===state.cat)renderCurrent();return;}
+    let text;try{text=decodeB64(b64);}catch(e){st.status=["error","Couldn't read the feed"];if(cat===state.cat)renderCurrent();return;}
+    applyBlocks(cat,extractBlocks(parseCSV(text)),"live feed",ev.result.cache&&ev.result.cache.storedAt||Date.now());}
+  else liveError(cat,ev.error);}
+function liveError(cat,err){const st=store[cat],code=err&&err.code,C=CATS[cat];
+  const denial={needs_reauth:["Reconnect Google Drive","Reconnect Google Drive in claude.ai Settings → Connectors, then press Refresh."],
+    server_not_connected:["Add the Google Drive connector","This page reads the trackers through your Google Drive connection. Add Google Drive in claude.ai Settings → Connectors, then press Refresh."],
+    not_in_manifest:["Google Drive is turned off for this page","Allow Google Drive for this page in its connector settings, then press Refresh."],
+    blocked_by_policy:["Your organisation blocks this Google Drive call","Ask your Claude admin to allow Google Drive file downloads in artifacts."],
+    approval_required:["This Google Drive call needs approval","Your organisation requires approval for this call, which pages can't ask for yet. Ask your Claude admin."],
+    selection_required:["Choose a Google Drive connection","You have more than one Google Drive connection. Pick one when Claude asks, then press Refresh."]};
+  if(denial[code]){st.model=null;st.status=["error",denial[code][0]];st.notice={kind:"error",title:denial[code][0],body:denial[code][1]};}
+  else if(code==="tool_error"){st.status=["error","Couldn't read the feed"];st.notice={kind:"error",title:"Google Drive couldn't read the "+C.label+" feed",body:(err.message?err.message+" ":"")+"Check that you can open the feed sheet.",link:C.feed?["Open the feed sheet","https://docs.google.com/spreadsheets/d/"+C.feed+"/edit"]:null};}
+  else{st.status=["error",st.model?"Couldn't refresh · showing earlier data":"Google Drive didn't answer"];if(!st.model)st.notice={kind:"error",title:"Google Drive didn't answer",body:"Press Refresh to try again in a moment."};
+    if(err&&err.retryable&&!st.retried){st.retried=true;setTimeout(()=>{st.retried=false;refresh();},Math.max(err.retryAfterMs||0,2500+Math.random()*2500));}}
+  if(cat===state.cat)renderCurrent();}
+async function refresh(){document.body.classList.add("loading");setTimeout(()=>document.body.classList.remove("loading"),60000);
+  if(LIVE){try{await LIVE.invalidate("Google Drive","download_file_content");}catch(e){for(const C of Object.values(CATS)){if(!C.feed)continue;try{onLive(C.key,{type:"data",result:await LIVE.callTool("Google Drive","download_file_content",{fileId:C.feed,exportMimeType:"text/csv"},{cache:{refresh:true,staleTime:0,gcTime:3600000}})});}catch(err){liveError(C.key,err);}}}}
+  else if(OAUTH.on){await loadAllLive();}
+  else{await Promise.all(Object.keys(CATS).map(loadUrl));document.body.classList.remove("loading");}}
+async function loadUrl(cat){const u=CFG.dataUrl&&CFG.dataUrl[cat];if(!u)return;const st=store[cat];
+  try{const r=await fetch(u+(u.includes("?")?"&":"?")+"_ts="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("status "+r.status);const t=await r.text();if(/^\s*<(!doctype|html)/i.test(t))throw new Error("html");
+    applyBlocks(cat,csvToBlocks(t).blocks,"live link",Date.now());}
+  catch(e){st.status=["error",st.model?"Couldn't refresh":"Live link didn't load"];if(!st.model)st.notice={kind:"error",title:"The "+CATS[cat].label+" live link didn't load",body:"If your Google admin limits published files to company accounts, a page outside Google can't read them. Load the tracker file instead."};if(cat===state.cat)renderCurrent();}}
+function csvToBlocks(text){const rows=parseCSV(text);let blocks={};
+  if(rows.slice(0,12).some(r=>r.some(v=>/^##/.test(v))))blocks=extractBlocks(rows);
+  else{const head=rows.slice(0,6).map(r=>r.map(norm).join("|")).join("\n");if(/^target\|ach/m.test(head))blocks={"MTD Revenue MIS":rows};else if(/^vendor name\|revenue/m.test(head))blocks={"MTD Vendor MIS":rows};}
+  const cat=blocks["DOD MIS (Recorded)"]||blocks["DOD MIS (Uploaded)"]?"domestic":blocks["DOD MIS"]?"commercial":null;return{blocks,cat};}
+let xlsxLib=null;
+function loadXLSX(){if(window.XLSX)return Promise.resolve(window.XLSX);if(!xlsxLib)xlsxLib=new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+  s.onload=()=>window.XLSX?res(window.XLSX):rej(new Error("The Excel reader didn't start."));s.onerror=()=>{xlsxLib=null;rej(new Error("The Excel reader couldn't be downloaded. Check your internet connection."));};document.head.append(s);});return xlsxLib;}
+async function readWorkbook(file){const X=await loadXLSX(),buf=await file.arrayBuffer();const all=X.read(buf,{type:"array",bookSheets:true}).SheetNames;const has=n=>all.find(s=>norm(s)===norm(n));
+  const cat=has("DOD MIS (Recorded)")||has("DOD MIS (Uploaded)")?"domestic":has("DOD MIS")?"commercial":null;if(!cat)return{blocks:{},cat:null};
+  const pick=CATS[cat].tabs.map(has).filter(Boolean);const wb=X.read(buf,{type:"array",sheets:pick});const blocks={};
+  CATS[cat].tabs.forEach(t=>{const nm=has(t);if(nm&&wb.Sheets[nm])blocks[t]=X.utils.sheet_to_json(wb.Sheets[nm],{header:1,raw:false,defval:"",blankrows:false}).map(r=>r.map(v=>String(v==null?"":v)));});
+  return{blocks,cat};}
+async function loadFiles(files){let lastCat=null;document.body.classList.add("loading");
+  for(const f of files){try{const r=/\.(xlsx|xls|xlsm)$/i.test(f.name)?await readWorkbook(f):csvToBlocks(await f.text());const cat=r.cat||state.cat;
+      if(!Object.keys(r.blocks).length){store[state.cat].notice={kind:"error",title:f.name+" isn't a Mecka tracker",body:"Couldn't find the MTD Revenue MIS, MTD Vendor MIS or DOD MIS tabs in it."};renderCurrent();continue;}
+      applyBlocks(cat,r.blocks,f.name,Date.now());lastCat=cat;}
+    catch(e){store[state.cat].notice={kind:"error",title:f.name+" couldn't be read",body:(e&&e.message)||"Load the tracker's Excel download (.xlsx)."};renderCurrent();}}
+  document.body.classList.remove("loading");$("fileIn").value="";if(lastCat&&!store[state.cat].model)setCat(lastCat);}
+
+/* ===== Google sign-in live mode (GitHub version) ===== */
+const OAUTH={token:null,exp:0,client:null,on:false};
+const SCOPE="https://www.googleapis.com/auth/spreadsheets.readonly";
+const trackerId=C=>{const m=String(C.tracker||"").match(/\/d\/([^/]+)/);return m?m[1]:"";};
+function loadGIS(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();const s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.async=true;
+  s.onload=()=>window.google&&google.accounts&&google.accounts.oauth2?res():rej(new Error("Google sign-in didn't start."));s.onerror=()=>rej(new Error("Google sign-in couldn't load. Check your internet connection, or turn off any blocker for accounts.google.com."));document.head.append(s);});}
+function saveToken(){try{sessionStorage.setItem("mecka.tok",JSON.stringify({t:OAUTH.token,e:OAUTH.exp}));}catch(e){}}
+function readToken(){try{const j=JSON.parse(sessionStorage.getItem("mecka.tok")||"null");if(j&&j.e>Date.now()+60000){OAUTH.token=j.t;OAUTH.exp=j.e;}}catch(e){}}
+function clearToken(){OAUTH.token=null;OAUTH.exp=0;try{sessionStorage.removeItem("mecka.tok");}catch(e){}}
+const signedIn=()=>!!OAUTH.token&&OAUTH.exp>Date.now()+30000;
+function updateAuthUI(){const on=signedIn();$("signInBtn").hidden=on;$("signOutBtn").hidden=!on;$("signinPanel").hidden=on;$("refreshBtn").hidden=!on;}
+function authNotice(kind,title,body){Object.keys(store).forEach(k=>{store[k].notice={kind,title,body};});renderCurrent();}
+async function initOAuth(){await loadGIS();
+  OAUTH.client=google.accounts.oauth2.initTokenClient({client_id:CFG.googleClientId,scope:SCOPE,prompt:"",
+    callback:r=>{if(!r||r.error){authNotice("error","Sign-in didn't finish",(r&&(r.error_description||r.error))||"Try again.");return;}
+      OAUTH.token=r.access_token;OAUTH.exp=Date.now()+(Number(r.expires_in)||3600)*1000;saveToken();Object.keys(store).forEach(k=>store[k].notice=null);updateAuthUI();loadAllLive();},
+    error_callback:e=>authNotice("warn","Sign-in was closed",e&&e.type==="popup_failed_to_open"?"Your browser blocked the Google window. Allow pop-ups for this site, then click Sign in with Google again.":"The Google window closed before sign-in finished. Click Sign in with Google to try again.")});}
+function signIn(){if(!OAUTH.client){authNotice("error","Google sign-in isn't ready","Reload the page and try again.");return;}OAUTH.client.requestAccessToken({prompt:""});}
+function signOut(){try{google.accounts.oauth2.revoke(OAUTH.token,()=>{});}catch(e){}clearToken();
+  Object.keys(store).forEach(k=>{store[k].model=null;store[k].status=["neutral","Signed out"];store[k].notice=null;});updateAuthUI();renderCurrent();}
+async function sheetsGet(id,ranges){
+  const u="https://sheets.googleapis.com/v4/spreadsheets/"+encodeURIComponent(id)+"/values:batchGet?majorDimension=ROWS&"+ranges.map(r=>"ranges="+encodeURIComponent(r)).join("&");
+  const r=await fetch(u,{headers:{Authorization:"Bearer "+OAUTH.token},cache:"no-store"});
+  if(!r.ok){let msg="";try{msg=(await r.json()).error.message;}catch(e){}const err=new Error(msg||"status "+r.status);err.status=r.status;throw err;}
+  const j=await r.json();return(j.valueRanges||[]).map(v=>(v.values||[]).map(row=>row.map(x=>String(x==null?"":x))));}
+async function loadLiveSheet(cat){
+  const C=CATS[cat],st=store[cat],direct=CFG.source==="tracker",id=direct?trackerId(C):C.feed,what=direct?"tracker":"feed sheet";if(!id)return;
+  try{let blocks={};
+    if(direct){const vals=await sheetsGet(id,C.tabs.map(t=>"'"+t.replace(/'/g,"''")+"'!A1:AJ"));C.tabs.forEach((t,i)=>blocks[t]=vals[i]||[]);}
+    else{const res=await sheetsGet(id,["A1:FZ600"]);blocks=extractBlocks(res[0]||[]);}
+    applyBlocks(cat,blocks,"live feed",Date.now());}
+  catch(e){
+    if(e.status===401){clearToken();updateAuthUI();st.status=["wait","Sign in again"];st.notice={kind:"warn",title:"Your Google sign-in has expired",body:"Click Sign in with Google to keep the data live."};}
+    else if(e.status===403){st.status=["error","No access"];st.notice={kind:"error",title:"This Google account can't open the "+C.label+" "+what,body:"Ask the owner to share it with you (view access is enough), then press Refresh. Google says: "+(e.message||"access denied")};}
+    else if(e.status===404){st.status=["error","Sheet not found"];st.notice={kind:"error",title:"The "+C.label+" "+what+" wasn't found",body:"Check the sheet link in the settings at the top of index.html."};}
+    else{st.status=["error",st.model?"Couldn't refresh · showing earlier data":"Couldn't load"];if(!st.model)st.notice={kind:"error",title:"The "+C.label+" data didn't load",body:(e.message?e.message+". ":"")+"Press Refresh to try again."};}
+    if(cat===state.cat)renderCurrent();}}
+function loadAllLive(){if(!signedIn())return Promise.resolve();document.body.classList.add("loading");return Promise.all(Object.keys(CATS).map(loadLiveSheet)).finally(()=>document.body.classList.remove("loading"));}
+
+/* ===== controls ===== */
+$("catSwitch").addEventListener("click",e=>{const b=e.target.closest("button[data-cat]");if(b)setCat(b.dataset.cat);});
+$("pfSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;state.pfMetric=b.dataset.v;renderCurrent();});
+function segWire(id,key){$(id).addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;state[key]=b.dataset.v;$(id).querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderCurrent();});}
+segWire("basisSeg","basis");segWire("vdBasis","vdBasis");
+$("dispSel").addEventListener("change",e=>{state.disp=e.target.value;renderCurrent();});
+$("vdSel").addEventListener("change",e=>{state.vendor=e.target.value;renderCurrent();});
+$("refreshBtn").addEventListener("click",refresh);
+$("signInBtn").addEventListener("click",signIn);$("signInBtn2").addEventListener("click",signIn);$("signOutBtn").addEventListener("click",signOut);
+$("fileIn").addEventListener("change",e=>loadFiles([...(e.target.files||[])]));
+["dragenter","dragover"].forEach(t=>document.addEventListener(t,e=>{if(standalone&&e.dataTransfer&&[...e.dataTransfer.types].includes("Files")){e.preventDefault();$("drop").classList.add("over");}}));
+document.addEventListener("dragleave",e=>{if(!e.relatedTarget)$("drop").classList.remove("over");});
+document.addEventListener("drop",e=>{$("drop").classList.remove("over");if(!standalone||!e.dataTransfer||!e.dataTransfer.files.length)return;e.preventDefault();loadFiles([...e.dataTransfer.files]);});
+window.addEventListener("hashchange",fromHash);
+let rz=0,lastW=0;new ResizeObserver(en=>{const w=Math.round(en[0].contentRect.width);if(w===lastW)return;lastW=w;clearTimeout(rz);rz=setTimeout(renderCurrent,150);}).observe($("main"));
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",renderCurrent);}catch(e){}
+new MutationObserver(renderCurrent).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ===== boot ===== */
+async function boot(){
+  try{const c=localStorage.getItem("mecka.cat");if(CATS[c])state.cat=c;}catch(e){}
+  const h=(location.hash||"").replace("#","");if(PAGES.includes(h))state.page=h;
+  renderCurrent();
+  let mcp=null;try{mcp=window.claude&&typeof window.claude.use==="function"?await window.claude.use("mcp"):null;}catch(e){mcp=null;}
+  if(mcp){LIVE=mcp;document.body.classList.add("loading");
+    Object.values(CATS).forEach(C=>{if(!C.feed)return;mcp.watchTool("Google Drive","download_file_content",{fileId:C.feed,exportMimeType:"text/csv"},ev=>onLive(C.key,ev),{cache:{staleTime:60000,gcTime:3600000},refetchInterval:Math.max(1,CFG.refreshMinutes)*60000});});}
+  else if(CFG.googleClientId){standalone=true;OAUTH.on=true;$("drop").hidden=true;readToken();
+    Object.keys(CATS).forEach(k=>{store[k].status=signedIn()?["wait","Loading…"]:["wait","Sign in to load"];});updateAuthUI();renderCurrent();
+    try{await initOAuth();}catch(e){authNotice("error","Google sign-in couldn't start",e.message);return;}
+    const mins=Math.max(1,CFG.refreshMinutes)*60000;if(signedIn())loadAllLive();
+    setInterval(()=>{if(!document.hidden)loadAllLive();},mins);
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)return;if(signedIn()){const last=Math.max(...Object.values(store).map(x=>x.ts||0));if(Date.now()-last>mins)loadAllLive();}else updateAuthUI();});}
+  else if(!CFG.allowFiles&&!Object.keys(CATS).some(k=>CFG.dataUrl&&CFG.dataUrl[k])){standalone=true;$("drop").hidden=true;$("setupPanel").hidden=false;$("refreshBtn").hidden=true;
+    Object.keys(CATS).forEach(k=>{store[k].status=["wait","Setup needed"];});renderCurrent();}
+  else{standalone=true;$("fileBtn").hidden=false;const urls=Object.keys(CATS).filter(k=>CFG.dataUrl&&CFG.dataUrl[k]);$("refreshBtn").hidden=!urls.length;
+    Object.keys(CATS).forEach(k=>{store[k].status=urls.includes(k)?["wait","Loading…"]:["neutral","No data loaded"];});renderCurrent();
+    if(urls.length){await Promise.all(urls.map(loadUrl));setInterval(()=>{if(!document.hidden)urls.forEach(loadUrl);},Math.max(1,CFG.refreshMinutes)*60000);}}
+}
+boot();
+})();
+</script>
+</body>
+</html>
